@@ -60,7 +60,7 @@ createApp({
             this.admin = JSON.parse(adminData);
             this.fetchProducts();
         } else {
-            window.location.href = '../../admin/admin_login_register.html';
+            window.location.href = '/yayasan_bambu_dss/template/admin/admin_login_register.html';
         }
     },
     methods: {

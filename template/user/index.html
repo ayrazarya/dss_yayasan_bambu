@@ -1,50 +1,628 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - DSS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - DSS Analitik V2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #F7F8FC; /* Lighter, slightly blueish gray */
+        }
+        .dropdown-menu { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
+        .dropdown:hover .dropdown-menu { display: block; opacity: 1; transform: translateY(0); }
+        ::-webkit-scrollbar { width: 7px; height: 7px; }
+        ::-webkit-scrollbar-track { background: #e9eaf0; }
+        ::-webkit-scrollbar-thumb { background: #b8c0d0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9da7bb; }
+
+        .table-loading-shimmer td > div, .chart-loading-shimmer > div, .criteria-loading-shimmer > div {
+            background: linear-gradient(90deg, #eef0f5 25%, #e1e4eb 50%, #eef0f5 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+            border-radius: 8px; /* Disesuaikan dengan radius kartu kriteria */
+        }
+        .table-loading-shimmer td > div { height: 20px; border-radius: 4px;}
+        .chart-loading-shimmer > div { height: 100%; width: 100%; }
+        .criteria-loading-shimmer > div { height: 90px; } /* Tinggi kira-kira kartu kriteria */
+
+
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .card {
+            background-color: white;
+            border-radius: 1rem; /* 16px */
+            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.12); /* Slightly enhanced shadow */
+            padding: 1.5rem; /* 24px */
+        }
+        .btn-gradient {
+             background-image: linear-gradient(to right, #22c55e 0%, #15803d 100%);
+             color: white; font-weight: 600; padding: 0.875rem 1.75rem;
+             border-radius: 0.75rem; transition: all 0.3s ease;
+             box-shadow: 0 4px 15px rgba(22, 163, 74, 0.25);
+        }
+        .btn-gradient:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 7px 20px rgba(22, 163, 74, 0.35); }
+        .btn-outline {
+            background-color: transparent; color: #16a34a; border: 2px solid #16a34a;
+            font-weight: 600; padding: calc(0.875rem - 2px) calc(1.75rem - 2px) ;
+            border-radius: 0.75rem; transition: all 0.3s ease;
+        }
+        .btn-outline:hover { background-color: #f0fdf4; transform: translateY(-2px); }
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .animation-delay-2000 { animation-delay: 2s; }
+
+        .criterion-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB; /* neutral-200 */
+            border-radius: 0.75rem; /* 12px */
+            padding: 1rem; /* 16px */
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            display: flex; /* Added for better internal alignment */
+            flex-direction: column; /* Added for better internal alignment */
+            justify-content: space-between; /* Added for better internal alignment */
+        }
+        .criterion-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.07);
+            border-color: #D1D5DB; /* neutral-300 */
+        }
+    </style>
 </head>
-<body>
-    <div id="app">
-        <h2>Selamat Datang, {{ user.full_name || user.username }}</h2>
-        <p>Email: {{ user.email }}</p>
-        <p>Role: {{ user.role }}</p>
-        <p>Status Akun: <span :style="{ color: user.is_active ? 'green' : 'red' }">{{ user.is_active ? 'Aktif' : 'Nonaktif' }}</span></p>
-        <button @click="logout">Logout</button>
+<body class="text-neutral-800 font-inter">
+    <div id="app" class="flex flex-col min-h-screen">
+        <nav class="bg-white/95 backdrop-blur-xl shadow-sm sticky top-0 z-50 border-b border-neutral-200/70">
+            <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-20">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <span class="text-3xl font-bold text-bamboo-600">
+                                <i class="fa-solid fa-seedling mr-2 text-bamboo-500"></i>DSS<span class="font-light text-bamboo-400">Analitik</span>
+                            </span>
+                        </div>
+                         <div class="hidden md:ml-12 md:flex md:items-center md:space-x-3 lg:space-x-5">
+                            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-semibold text-bamboo-600 bg-bamboo-100/90 relative group">
+                                <span><i class="fas fa-chart-pie mr-2"></i>Dashboard</span>
+                                <span class="absolute bottom-0 left-0 w-full h-0.5 bg-bamboo-500 scale-x-100 transition-transform duration-300"></span>
+                            </a>
+                            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-neutral-600 hover:text-bamboo-600 hover:bg-bamboo-50 group relative">
+                                <span><i class="fas fa-user-gear mr-2"></i>Profil</span>
+                                <span class="absolute bottom-0 left-0 w-full h-0.5 bg-bamboo-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                            </a>
+                            <a href="#" class="px-4 py-2.5 rounded-lg text-sm font-medium text-neutral-600 hover:text-bamboo-600 hover:bg-bamboo-50 group relative">
+                                <span><i class="fas fa-cog mr-2"></i>Pengaturan</span>
+                                 <span class="absolute bottom-0 left-0 w-full h-0.5 bg-bamboo-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="relative dropdown ml-3">
+                            <button type="button" class="flex items-center p-1 rounded-full hover:bg-neutral-100 focus:outline-none transition-colors duration-150" id="user-menu-button">
+                                <span class="sr-only">Buka menu pengguna</span>
+                                <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-bamboo-400 to-bamboo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                    {{ userInitials }}
+                                </div>
+                                <div class="ml-3 hidden lg:block">
+                                    <p class="text-sm font-semibold text-neutral-700 leading-tight">{{ user.full_name || user.username }}</p>
+                                    <p class="text-xs text-neutral-500 leading-tight capitalize">{{ user.role }}</p>
+                                </div>
+                                <i class="fas fa-angle-down ml-2 text-xs text-neutral-500 hidden lg:block opacity-70"></i>
+                            </button>
+                            <div class="dropdown-menu origin-top-right absolute right-0 mt-2.5 w-60 rounded-xl shadow-2xl py-2 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                <div class="px-4 py-3 border-b border-neutral-100">
+                                    <p class="text-sm font-semibold text-neutral-800 truncate">{{ user.full_name || user.username }}</p>
+                                    <p class="text-xs text-neutral-500 truncate">{{ user.email }}</p>
+                                </div>
+                                <div class="py-1">
+                                    <a href="#" class="flex items-center px-4 py-2.5 text-sm text-neutral-700 hover:bg-bamboo-50 hover:text-bamboo-600 rounded-md mx-1.5 my-0.5 transition-colors duration-150"><i class="fas fa-id-card-clip w-5 mr-2.5 text-bamboo-500"></i>Profil Anda</a>
+                                    <a href="#" class="flex items-center px-4 py-2.5 text-sm text-neutral-700 hover:bg-bamboo-50 hover:text-bamboo-600 rounded-md mx-1.5 my-0.5 transition-colors duration-150"><i class="fas fa-user-cog w-5 mr-2.5 text-bamboo-500"></i>Pengaturan Akun</a>
+                                </div>
+                                <div class="border-t border-neutral-100 pt-1"></div>
+                                <button @click="logout" class="flex items-center w-[calc(100%-0.75rem)] text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-md mx-1.5 my-0.5 transition-colors duration-150">
+                                    <i class="fas fa-power-off w-5 mr-2.5"></i>Keluar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="-mr-2 flex md:hidden ml-2">
+                            <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="bg-white/80 inline-flex items-center justify-center p-2 rounded-md text-neutral-500 hover:text-bamboo-600 hover:bg-bamboo-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-bamboo-500 transition-colors duration-150" aria-controls="mobile-menu" aria-expanded="false">
+                                <span class="sr-only">Buka menu utama</span>
+                                <i class="fas fa-bars text-xl" :class="{'hidden': mobileMenuOpen, 'block': !mobileMenuOpen}"></i>
+                                <i class="fas fa-times text-xl" :class="{'block': mobileMenuOpen, 'hidden': !mobileMenuOpen}"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="md:hidden border-t border-neutral-200/60" id="mobile-menu" v-show="mobileMenuOpen">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="#" class="block px-3 py-3 rounded-md text-base font-semibold text-bamboo-700 bg-bamboo-100"><i class="fas fa-chart-pie mr-3"></i>Dashboard</a>
+                    <a href="#" class="block px-3 py-3 rounded-md text-base font-medium text-neutral-700 hover:bg-bamboo-50 hover:text-bamboo-600"><i class="fas fa-user-gear mr-3"></i>Profil</a>
+                    <a href="#" class="block px-3 py-3 rounded-md text-base font-medium text-neutral-700 hover:bg-bamboo-50 hover:text-bamboo-600"><i class="fas fa-cog mr-3"></i>Pengaturan</a>
+                </div>
+            </div>
+        </nav>
+
+        <main class="flex-1 overflow-auto p-5 md:p-8">
+            <div class="max-w-screen-xl mx-auto">
+                <div class="mb-8 md:mb-10">
+                     <h1 class="text-3xl sm:text-4xl font-bold text-neutral-800">Halo, <span class="text-bamboo-600">{{ user.full_name || user.username }}</span>!</h1>
+                     <p class="text-neutral-600 text-lg mt-1">Berikut adalah ringkasan dukungan keputusan Anda.</p>
+                </div>
+
+                <div v-if="!isDssLoading && topRecommendation"
+                     class="bg-gradient-to-br from-bamboo-600 to-bamboo-700 text-white p-6 md:p-8 rounded-2xl shadow-2xl mb-10 relative overflow-hidden">
+                    <div class="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-white/5 rounded-full opacity-60 animate-pulse-slow"></div>
+                    <div class="absolute -bottom-1/4 -left-1/4 w-1/3 h-1/3 bg-white/10 rounded-lg transform rotate-12 opacity-50 animate-pulse-slow animation-delay-2000"></div>
+                    <div class="relative z-10">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-5">
+                            <div>
+                                <span class="inline-flex items-center px-4 py-1.5 bg-yellow-300 text-yellow-800 rounded-full text-sm font-bold mb-2 shadow-md">
+                                    <i class="fas fa-star mr-2"></i>Rekomendasi Teratas
+                                </span>
+                                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">{{ topRecommendation.name }}</h2>
+                                <p class="text-bamboo-200 text-sm">ID Produk: {{ topRecommendation.product_id }}</p>
+                            </div>
+                            <div class="mt-4 md:mt-0 text-left md:text-right">
+                                <p class="text-bamboo-100 text-sm font-medium">VIKOR Q-Value</p>
+                                <p class="text-5xl md:text-6xl font-bold text-white tabular-nums">{{ topRecommendation.Q }}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-5 border-t border-white/20">
+                            <div class="bg-white/10 p-4 rounded-lg hover:bg-white/20 transition-colors">
+                                <p class="text-xs text-bamboo-200 uppercase font-semibold tracking-wider">S-Value (Group Utility)</p>
+                                <p class="text-2xl font-bold text-white tabular-nums">{{ topRecommendation.S }}</p>
+                            </div>
+                            <div class="bg-white/10 p-4 rounded-lg hover:bg-white/20 transition-colors">
+                                <p class="text-xs text-bamboo-200 uppercase font-semibold tracking-wider">R-Value (Individual Regret)</p>
+                                <p class="text-2xl font-bold text-white tabular-nums">{{ topRecommendation.R }}</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-bamboo-200 mt-5 text-center opacity-80">Nilai Q yang lebih rendah mengindikasikan alternatif yang lebih baik.</p>
+                    </div>
+                </div>
+                 <div v-else-if="isDssLoading && !dssResults.length" class="card p-6 md:p-8 mb-10 animate-pulse">
+                    <div class="h-8 bg-neutral-200 rounded w-1/3 mb-4"></div> <div class="h-12 bg-neutral-200 rounded w-3/4 mb-6"></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><div class="bg-neutral-200 p-4 rounded-lg h-20"></div><div class="bg-neutral-200 p-4 rounded-lg h-20"></div></div>
+                </div>
+
+                <div v-if="dssResults.length > 0 || (isDssLoading && !dssResults.length)" class="mb-10 md:mb-12">
+                    <div class="card">
+                        <h3 class="text-xl md:text-2xl font-semibold text-bamboo-700 mb-1">Perbandingan Peringkat Produk (Q-Value)</h3>
+                        <p class="text-neutral-500 mb-5 text-sm">Visualisasi skor Q untuk setiap alternatif. Skor lebih rendah lebih baik.</p>
+                        <div v-if="isDssLoading && !dssResults.length" class="chart-loading-shimmer" style="height: 300px; width: 100%;"><div class="bg-neutral-200"></div></div>
+                        <div v-show="!isDssLoading && dssResults.length > 0" style="height: 300px; position: relative;">
+                            <canvas id="vikorRankChart"></canvas>
+                        </div>
+                         <p v-if="!isDssLoading && dssResults.length === 0 && !dssError" class="text-center text-neutral-500 py-10">
+                            Data tidak tersedia untuk menampilkan grafik.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                    <div class="lg:col-span-2 card">
+                        <h3 class="text-xl md:text-2xl font-semibold text-bamboo-700 mb-1.5">Model Keputusan VIKOR</h3>
+                        <p class="text-neutral-500 mb-6">Analisis alternatif produk atau tinjau peringkat yang ada.</p>
+
+                        <div class="mb-8">
+                            <h4 class="text-lg font-semibold text-neutral-700 mb-4">Kriteria Evaluasi Digunakan:</h4>
+                            <div v-if="isDssLoading && dssCriteria.length === 0" class="grid grid-cols-1 sm:grid-cols-2 gap-4 criteria-loading-shimmer">
+                                <div v-for="n in 4" :key="`crit-load-${n}`"></div>
+                            </div>
+                            <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div v-for="criterion in dssCriteria" :key="criterion.id"
+                                     class="criterion-card">
+                                    <div>
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-xs font-bold uppercase tracking-wider" :class="criterion.colorClass || 'text-bamboo-600'">{{ criterion.id }}</span>
+                                            <span :class="criterion.type === 'cost' ? 'bg-red-100 text-red-700' : 'bg-bamboo-100 text-bamboo-700'"
+                                                  class="px-3 py-0.5 rounded-full text-xs font-semibold">
+                                                <i :class="criterion.type === 'cost' ? 'fas fa-arrow-down' : 'fas fa-arrow-up'" class="mr-1"></i>
+                                                {{ criterion.type === 'cost' ? 'Biaya' : 'Manfaat' }}
+                                            </span>
+                                        </div>
+                                        <p class="text-neutral-800 text-sm font-semibold leading-tight mb-1">{{ criterion.name }}</p>
+                                    </div>
+                                    <div class="flex items-center text-xs mt-3 pt-3 border-t border-neutral-100" :class="criterion.type === 'cost' ? 'text-red-600' : 'text-green-600'">
+                                        <i :class="[criterion.icon, criterion.colorClass]" class="text-lg mr-2 w-5 text-center"></i>
+                                        <span class="font-medium">{{ criterion.type === 'cost' ? 'Diminimalkan' : 'Dimaksimalkan' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-lg font-semibold text-neutral-700 mb-3">Tindakan:</h4>
+                            <div class="flex flex-col sm:flex-row items-center gap-4">
+                                <button @click="startDSSCalculation" :disabled="isDssLoading" class="btn-gradient w-full sm:w-auto flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed">
+                                    <i class="fas fa-calculator mr-2.5"></i>
+                                    <span v-if="!isDssLoading">Jalankan Analisis Baru</span>
+                                    <span v-else>Menghitung... <i class="fas fa-spinner fa-spin ml-2"></i></span>
+                                </button>
+                                <button @click="fetchExistingRankings" :disabled="isDssLoading" class="btn-outline w-full sm:w-auto flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed">
+                                    <i class="fas fa-history mr-2.5"></i>
+                                    <span v-if="!isDssLoading">Muat Peringkat Tersimpan</span>
+                                    <span v-else>Memuat... <i class="fas fa-spinner fa-spin ml-2"></i></span>
+                                </button>
+                            </div>
+                            <p class="text-neutral-500 text-xs text-center sm:text-left mt-3">Hitung ulang atau muat peringkat produk berdasarkan data terbaru.</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="text-xl font-semibold text-bamboo-700 mb-5 flex items-center">
+                           <i class="fas fa-user-check mr-3 text-bamboo-500 text-2xl"></i>Ringkasan Akun
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center">
+                               <div class="w-10 h-10 rounded-full bg-gradient-to-br from-bamboo-400 to-bamboo-600 flex items-center justify-center text-white font-semibold text-md shadow-md mr-3">
+                                    {{ userInitials }}
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-neutral-700 leading-tight">{{ user.full_name || user.username }}</p>
+                                    <p class="text-sm text-neutral-500 leading-tight">{{ user.email }}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500 uppercase font-medium tracking-wider">Peran</p>
+                                <p class="font-medium text-neutral-700 capitalize">{{ user.role }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-neutral-500 uppercase font-medium tracking-wider mb-1">Status</p>
+                                <span :class="user.is_active ? 'bg-bamboo-100 text-bamboo-800' : 'bg-red-100 text-red-800'" class="px-2.5 py-1 rounded-full text-xs font-semibold inline-flex items-center">
+                                    <i :class="user.is_active ? 'fas fa-shield-alt mr-1.5' : 'fas fa-exclamation-triangle mr-1.5'"></i>
+                                    {{ user.is_active ? 'Aktif & Aman' : 'Tidak Aktif' }}
+                                </span>
+                            </div>
+                             <div>
+                                <p class="text-xs text-neutral-500 uppercase font-medium tracking-wider">Sesi Terakhir</p>
+                                <p class="font-medium text-neutral-700">{{ formattedDate }}</p>
+                            </div>
+                            <button class="w-full mt-2 py-2.5 px-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium rounded-lg transition-colors text-sm flex items-center justify-center">
+                                <i class="fas fa-tasks mr-2"></i>Lihat Log Aktivitas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="dssError" class="my-6 p-4 bg-red-100 text-red-700 border border-red-300 rounded-lg card">
+                    <i class="fas fa-times-circle mr-2"></i> {{ dssError }}
+                </div>
+
+                <div v-if="dssResults.length > 0 || (isDssLoading && dssResults.length === 0)" class="mt-8 md:mt-10">
+                    <h3 class="text-xl md:text-2xl font-semibold text-bamboo-700 mb-5">Peringkat Detail VIKOR:</h3>
+                    <div class="card p-0 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white">
+                                <thead class="bg-neutral-50">
+                                    <tr>
+                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Peringkat</th>
+                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Nama Produk</th>
+                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Q Value</th>
+                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">S Value</th>
+                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">R Value</th>
+                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">ID Produk</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-neutral-100" :class="{'table-loading-shimmer': isDssLoading && dssResults.length === 0}">
+                                    <template v-if="isDssLoading && dssResults.length === 0">
+                                        <tr v-for="n in 4" :key="'load-' + n">
+                                            <td class="px-5 py-4 whitespace-nowrap"><div class="w-8"></div></td> <td class="px-5 py-4 whitespace-nowrap"><div class="w-40"></div></td>
+                                            <td class="px-5 py-4 whitespace-nowrap"><div class="w-20"></div></td> <td class="px-5 py-4 whitespace-nowrap"><div class="w-20"></div></td>
+                                            <td class="px-5 py-4 whitespace-nowrap"><div class="w-20"></div></td> <td class="px-5 py-4 whitespace-nowrap"><div class="w-28"></div></td>
+                                        </tr>
+                                    </template>
+                                    <template v-else>
+                                        <tr v-for="(result, index) in dssResults" :key="result.product_id"
+                                            :class="{'bg-bamboo-500/10 font-semibold': index === 0 && topRecommendation && result.product_id === topRecommendation.product_id, 'hover:bg-neutral-50/70': !(index === 0 && topRecommendation && result.product_id === topRecommendation.product_id)}"
+                                            class="transition-colors duration-150">
+                                            <td class="px-5 py-4 whitespace-nowrap text-sm">
+                                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold"
+                                                      :class="index === 0 ? 'bg-bamboo-500 text-white shadow-md' : (index < 3 ? 'bg-bamboo-100 text-bamboo-700' : 'bg-neutral-100 text-neutral-600')">
+                                                    {{ index + 1 }}
+                                                </span>
+                                            </td>
+                                            <td class="px-5 py-4 whitespace-nowrap text-sm text-neutral-700 font-medium">{{ result.name }}</td>
+                                            <td class="px-5 py-4 whitespace-nowrap text-sm tabular-nums" :class="index === 0 ? 'text-bamboo-600 font-bold' : 'text-neutral-700'">{{ result.Q }}</td>
+                                            <td class="px-5 py-4 whitespace-nowrap text-sm text-neutral-600 tabular-nums">{{ result.S }}</td>
+                                            <td class="px-5 py-4 whitespace-nowrap text-sm text-neutral-600 tabular-nums">{{ result.R }}</td>
+                                            <td class="px-5 py-4 whitespace-nowrap text-sm text-neutral-500">{{ result.product_id }}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                         <p v-if="!isDssLoading && dssResults.length === 0 && !dssError" class="text-center text-neutral-500 p-8">
+                            Tidak ada hasil peringkat untuk ditampilkan. Silakan jalankan analisis atau muat data yang ada.
+                        </p>
+                    </div>
+                </div>
+
+                <footer class="mt-16 pt-10 border-t border-neutral-200/80 text-center text-sm text-neutral-500">
+                    <p>&copy; {{ new Date().getFullYear() }} DSS Analitik Solutions. Hak Cipta Dilindungi.</p>
+                    <p class="mt-1 opacity-80">Pengambilan Keputusan Cerdas, Disederhanakan.</p>
+                </footer>
+            </div>
+        </main>
     </div>
 
-    <script src="https://unpkg.com/vue@3"></script>
     <script>
-        const { createApp } = Vue;
+        const { createApp, ref, computed, watch, nextTick, onMounted } = Vue;
 
         createApp({
-            data() {
-                return {
-                    user: {}
-                }
-            },
-            methods: {
-                logout() {
-                    localStorage.removeItem('userData');
-                    sessionStorage.removeItem('userData');
-                    window.location.href = 'login.html'; // Ganti sesuai nama file login kamu
-                }
-            },
-            mounted() {
-                const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
-                if (userData) {
-                    try {
-                        this.user = JSON.parse(userData);
-                    } catch (e) {
-                        console.error('User data corrupt:', e);
-                        this.logout();
+            setup() {
+                const apiBaseUrl = ref('http://localhost:8000'); // !!! PENTING: UBAH SESUAI BACKEND ANDA !!!
+                const user = ref({
+                    username: 'pengguna_demo',
+                    email: 'demo@example.com',
+                    role: 'Analis Senior',
+                    is_active: true,
+                    full_name: 'Alex Wijaya'
+                });
+                const mobileMenuOpen = ref(false);
+                const dssCriteria = ref([
+                    { id: 'C1', name: 'Biaya pengembangan awal (Rp)', type: 'cost', icon: 'fas fa-drafting-compass', colorClass: 'text-red-500' },
+                    { id: 'C2', name: 'Biaya produksi per unit (Rp)', type: 'cost', icon: 'fas fa-coins', colorClass: 'text-red-500' },
+                    { id: 'C3', name: 'Periode balik modal (bulan)', type: 'cost', icon: 'fas fa-hourglass-half', colorClass: 'text-orange-500' },
+                    { id: 'C4', name: 'Minat pasar (skor 1-5)', type: 'benefit', icon: 'fas fa-users', colorClass: 'text-green-500' }
+                ]);
+                const dssResults = ref([]);
+                const isDssLoading = ref(false);
+                const dssError = ref(null);
+                const chartInstance = ref(null);
+
+                const userInitials = computed(() => {
+                    if (user.value.full_name) {
+                        const names = user.value.full_name.split(' ');
+                        if (names.length > 1) return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+                        return names[0].substring(0, 2).toUpperCase();
                     }
-                } else {
-                    // Kalau tidak login, kembalikan ke login
-                    window.location.href = 'login.html';
-                }
+                    if(user.value.username) return user.value.username.substring(0, 2).toUpperCase();
+                    return '??';
+                });
+
+                const formattedDate = computed(() => {
+                    return new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                });
+
+                const topRecommendation = computed(() => {
+                    if (dssResults.value && dssResults.value.length > 0) {
+                        return dssResults.value[0]; // Diasumsikan sudah diurutkan oleh backend atau saat fetch
+                    }
+                    return null;
+                });
+
+                const logout = () => {
+                    localStorage.removeItem('userData'); sessionStorage.removeItem('userData');
+                    user.value = { username: '', email: '', role: '', is_active: false, full_name: '' };
+                    alert('Pengguna keluar (simulasi).');
+                     // window.location.href = '/login.html'; // Arahkan ke halaman login jika ada
+                };
+
+                const _fetchData = async (endpoint, options = {}) => {
+                    isDssLoading.value = true;
+                    dssError.value = null;
+                     // Selalu bersihkan hasil dan chart untuk POST atau jika tidak ada opsi clearResultsOnFetch=false
+                     if (options.method === 'POST' || options.clearResultsOnFetch !== false) {
+                         if (chartInstance.value) { chartInstance.value.destroy(); chartInstance.value = null; }
+                         dssResults.value = [];
+                    }
+
+
+                    try {
+                        // await new Promise(resolve => setTimeout(resolve, 1500)); // Simulasi delay
+                        const response = await fetch(`${apiBaseUrl.value}${endpoint}`, options);
+                        if (!response.ok) {
+                            let errorDetail = `Error: ${response.status} ${response.statusText}`;
+                            try { const errorData = await response.json(); errorDetail = errorData.detail || errorDetail; }
+                            catch (e) { /* Abaikan jika body bukan JSON */ }
+                            throw new Error(errorDetail);
+                        }
+                        return await response.json();
+                    } catch (error) {
+                        console.error(`Error dengan ${endpoint}:`, error);
+                        dssError.value = `Operasi gagal: ${error.message}. Periksa jaringan dan server backend di ${apiBaseUrl.value}. Pastikan CORS dikonfigurasi dengan benar.`;
+                        if (chartInstance.value) { chartInstance.value.destroy(); chartInstance.value = null; }
+                        dssResults.value = []; // Bersihkan hasil jika terjadi error
+                        throw error; // Lempar ulang error agar bisa ditangkap oleh pemanggil jika perlu
+                    } finally {
+                        // Hanya set isDssLoading ke false jika tidak ada operasi fetch lain yang sedang berjalan
+                        // Ini sederhana, untuk kasus lebih kompleks, perlu state management yang lebih canggih
+                        isDssLoading.value = false;
+                    }
+                };
+
+                const renderOrUpdateChart = () => {
+                    if (chartInstance.value) {
+                        chartInstance.value.destroy();
+                        chartInstance.value = null;
+                    }
+                    if (!dssResults.value || dssResults.value.length === 0) return;
+
+                    const ctx = document.getElementById('vikorRankChart');
+                    if (!ctx) {
+                        console.warn('Elemen canvas "vikorRankChart" tidak ditemukan.');
+                        return;
+                    }
+
+                    // Urutkan data untuk grafik (Q value rendah lebih baik, jadi urutan menaik)
+                    // Pastikan Q adalah angka sebelum sorting
+                    const sortedResults = [...dssResults.value]
+                        .filter(item => item.Q && !isNaN(parseFloat(item.Q))) // Filter item dengan Q yang valid
+                        .sort((a, b) => parseFloat(a.Q) - parseFloat(b.Q));
+
+                    if (sortedResults.length === 0) {
+                        console.warn('Tidak ada data valid untuk ditampilkan di grafik setelah filter.');
+                        return;
+                    }
+
+                    const labels = sortedResults.map(item => item.name.length > 25 ? item.name.substring(0,22)+'...' : item.name);
+                    const dataValues = sortedResults.map(item => parseFloat(item.Q));
+
+                    chartInstance.value = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Q-Value',
+                                data: dataValues,
+                                backgroundColor: sortedResults.map((item, index) => index === 0 ? 'rgba(22, 163, 74, 0.85)' : 'rgba(74, 222, 128, 0.65)'), // Highlight top one
+                                borderColor: sortedResults.map((item, index) => index === 0 ? 'rgba(17, 128, 59, 1)' : 'rgba(50, 180, 100, 1)'),
+                                borderWidth: 1,
+                                barThickness: 'flex',
+                                maxBarThickness: 30,
+                                borderRadius: 4,
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    title: { display: true, text: 'Q-Value (Semakin Rendah Semakin Baik)', font: { weight: '500', size: 13 } },
+                                    grid: { display: true, color: 'rgba(200,200,200,0.1)' },
+                                    ticks: { font: { size: 11 } }
+                                },
+                                y: {
+                                    grid: { display: false },
+                                    ticks: { font: { size: 11 } }
+                                }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.75)',
+                                    titleFont: { weight: 'bold'},
+                                    bodyFont: { size: 13 },
+                                    padding: 10,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return ` Q-Value: ${context.formattedValue}`;
+                                        }
+                                    }
+                                }
+                            },
+                            animation: { duration: 800, easing: 'easeInOutQuart' }
+                        }
+                    });
+                };
+
+                const startDSSCalculation = async () => {
+                    console.log('Mulai kalkulasi VIKOR DSS!');
+                    try {
+                        // Opsi clearResultsOnFetch tidak diset, jadi defaultnya akan clear results & chart
+                        const result = await _fetchData('/vikor/calculate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                        });
+                        console.log('Hasil Kalkulasi VIKOR:', result);
+                        dssResults.value = (result.data || []).map(item => ({
+                            ...item,
+                            Q: !isNaN(parseFloat(item.Q)) ? parseFloat(item.Q).toFixed(6) : 'N/A',
+                            S: !isNaN(parseFloat(item.S)) ? parseFloat(item.S).toFixed(6) : 'N/A',
+                            R: !isNaN(parseFloat(item.R)) ? parseFloat(item.R).toFixed(6) : 'N/A'
+                        }));
+                        if (dssResults.value.length === 0) {
+                            dssError.value = result.message || 'Kalkulasi selesai, tapi tidak ada data peringkat yang dikembalikan.';
+                        }
+                    } catch (error) { /* Error sudah ditangani oleh _fetchData */ }
+                };
+
+                const fetchExistingRankings = async () => {
+                    console.log('Mengambil peringkat VIKOR yang ada...');
+                    try {
+                        // Set clearResultsOnFetch ke false agar tidak clear chart/results jika sedang loading data lain
+                        const data = await _fetchData('/vikor/rankings', { clearResultsOnFetch: dssResults.value.length > 0 ? false: undefined });
+                        console.log('Peringkat yang Diambil:', data);
+                        dssResults.value = (data || []).map(r => ({
+                            name: r.name, product_id: r.product_id,
+                            S: (r.S !== undefined && !isNaN(parseFloat(r.S)) ? parseFloat(r.S) : (r.score !== undefined && !isNaN(parseFloat(r.score)) ? parseFloat(r.score) : NaN)).toFixed(6),
+                            R: (r.R !== undefined && !isNaN(parseFloat(r.R)) ? parseFloat(r.R) : NaN).toFixed(6),
+                            Q: (r.Q !== undefined && !isNaN(parseFloat(r.Q)) ? parseFloat(r.Q) : (r.score !== undefined && !isNaN(parseFloat(r.score)) ? parseFloat(r.score) : NaN)).toFixed(6),
+                        })).map(item => ({
+                            ...item,
+                            S: item.S === 'NaN' || item.S === 'NaN.NaN' ? 'N/A' : item.S,
+                            R: item.R === 'NaN' || item.R === 'NaN.NaN' ? 'N/A' : item.R,
+                            Q: item.Q === 'NaN' || item.Q === 'NaN.NaN' ? 'N/A' : item.Q,
+                        }));
+                         if (dssResults.value.length === 0) {
+                            dssError.value = 'Tidak ada peringkat tersimpan yang ditemukan di database.';
+                        }
+                    } catch (error) { /* Error sudah ditangani oleh _fetchData */ }
+                };
+
+                const loadUserData = () => {
+                    const storedUserData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+                    if (storedUserData) {
+                        try {
+                            const parsedData = JSON.parse(storedUserData);
+                            user.value = { ...user.value, ...parsedData };
+                        }
+                        catch (e) { console.error('Data pengguna rusak di storage:', e); logout(); }
+                    } else { console.warn('Tidak ada data pengguna. Menggunakan data default/sampel.'); }
+                };
+
+                watch(dssResults, (newVal, oldVal) => {
+                    // Hanya render jika ada data baru yang valid dan berbeda dari sebelumnya
+                    // atau jika tidak ada chart instance (misalnya, setelah destroy)
+                    if (newVal && newVal.length > 0 && (JSON.stringify(newVal) !== JSON.stringify(oldVal) || !chartInstance.value)) {
+                       nextTick(() => {
+                           renderOrUpdateChart();
+                       });
+                    } else if ((!newVal || newVal.length === 0) && chartInstance.value) { // Jika data dikosongkan
+                        chartInstance.value.destroy();
+                        chartInstance.value = null;
+                    }
+                }, { deep: true });
+
+                onMounted(() => {
+                    loadUserData();
+                    fetchExistingRankings();
+                });
+
+                return {
+                    user, mobileMenuOpen, dssCriteria, dssResults, isDssLoading, dssError,
+                    userInitials,
+                    formattedDate,
+                    topRecommendation,
+                    logout,
+                    startDSSCalculation,
+                    fetchExistingRankings
+                };
             }
         }).mount('#app');
+
+        // Tailwind config
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], },
+                    colors: {
+                        bamboo: { 50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0', 300: '#86efac', 400: '#4ade80', 500: '#22c55e', 600: '#16a34a', 700: '#15803d', 800: '#166534', 900: '#14532d', },
+                        neutral: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a' }
+                    },
+                    boxShadow: {
+                        'md': '0 4px 6px -1px rgba(0,0,0,0.06), 0 2px 4px -1px rgba(0,0,0,0.05)',
+                        'lg': '0 10px 15px -3px rgba(0,0,0,0.06), 0 4px 6px -2px rgba(0,0,0,0.04)',
+                        'xl': '0 20px 25px -5px rgba(0,0,0,0.06), 0 10px 10px -5px rgba(0,0,0,0.03)',
+                        '2xl': '0 25px 50px -12px rgba(0,0,0,0.15)',
+                    },
+                    animation: { 'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', },
+                    keyframes: { pulse: { '0%, 100%': { opacity: 0.7 }, '50%': { opacity: 0.3 }, } }
+                }
+            }
+        };
     </script>
 </body>
 </html>
