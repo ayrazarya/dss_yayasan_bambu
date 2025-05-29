@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSS Yayasan Bambu Indonesia - Login & Register</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bamboo: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        earth: {
+                            50: '#faf7f0',
+                            100: '#f4ede0',
+                            200: '#e8d5b7',
+                            300: '#d9ba85',
+                            400: '#ca9c54',
+                            500: '#b8832d',
+                            600: '#a16c24',
+                            700: '#7c5320',
+                            800: '#5d3e18',
+                            900: '#3e2910',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .bamboo-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-opacity='0.03'%3E%3Cpath d='M50 20c16.569 0 30 13.431 30 30s-13.431 30-30 30-30-13.431-30-30 13.431-30 30-30zm0 10c-11.046 0-20 8.954-20 20s8.954 20 20 20 20-8.954 20-20-8.954-20-20-20z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .slide-fade-enter-active {
+            transition: all 0.3s ease-out;
+        }
+
+        .slide-fade-leave-active {
+            transition: all 0.3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+        }
+
+        .slide-fade-enter-from,
+        .slide-fade-leave-to {
+            transform: translateX(20px);
+            opacity: 0;
+        }
+
+        .bounce-in-enter-active {
+            animation: bounceIn 0.5s;
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale3d(0.3, 0.3, 0.3);
+                opacity: 0;
+            }
+            20% {
+                transform: scale3d(1.1, 1.1, 1.1);
+            }
+            40% {
+                transform: scale3d(0.9, 0.9, 0.9);
+            }
+            60% {
+                transform: scale3d(1.03, 1.03, 1.03);
+                opacity: 1;
+            }
+            80% {
+                transform: scale3d(0.97, 0.97, 0.97);
+            }
+            100% {
+                transform: scale3d(1, 1, 1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-bamboo-50 via-white to-earth-50 bamboo-pattern">
+    <div id="app">
+        <!-- Background decorative elements -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute top-20 left-10 w-32 h-32 bg-bamboo-200 rounded-full opacity-20 animate-pulse"></div>
+            <div class="absolute top-40 right-20 w-24 h-24 bg-earth-200 rounded-full opacity-25 animate-bounce"></div>
+            <div class="absolute bottom-20 left-1/4 w-20 h-20 bg-bamboo-300 rounded-full opacity-30"></div>
+            <div class="absolute bottom-40 right-10 w-28 h-28 bg-earth-300 rounded-full opacity-15 animate-pulse"></div>
+        </div>
+
+        <div class="min-h-screen flex items-center justify-center p-4 relative z-10">
+            <div class="w-full max-w-md">
+                <!-- Header -->
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-bamboo-500 to-bamboo-600 rounded-full mb-4 shadow-xl">
+                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M9 21V9l6-3"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-3xl font-bold text-bamboo-800 mb-2">DSS Yayasan Bambu Indonesia</h1>
+                    <p class="text-bamboo-600">Sistem Pendukung Keputusan Pengembangan Produk</p>
+                </div>
+
+                <!-- Main Card -->
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl p-6 border border-white/50">
+                    <!-- Loading Overlay -->
+                    <div v-if="loading" class="absolute inset-0 bg-white/70 backdrop-blur-sm rounded-2xl flex items-center justify-center z-20">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-bamboo-500 mx-auto mb-2"></div>
+                            <p class="text-bamboo-600 text-sm">{{ loadingText }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Tab Switcher -->
+                    <div class="flex bg-gray-100 rounded-xl p-1 mb-6">
+                        <button
+                            @click="activeTab = 'login'"
+                            :class="['flex-1 py-3 px-4 text-sm font-medium rounded-lg transition-all duration-300',
+                                   activeTab === 'login' ? 'bg-bamboo-500 text-white shadow-md' : 'text-bamboo-700 hover:bg-white/50']"
+                        >
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                            </svg>
+                            Masuk
+                        </button>
+                        <button
+                            @click="activeTab = 'register'"
+                            :class="['flex-1 py-3 px-4 text-sm font-medium rounded-lg transition-all duration-300',
+                                   activeTab === 'register' ? 'bg-bamboo-500 text-white shadow-md' : 'text-bamboo-700 hover:bg-white/50']"
+                        >
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                            </svg>
+                            Daftar
+                        </button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <transition name="slide-fade">
+                        <div v-if="activeTab === 'login'" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-bamboo-800 mb-2">Email</label>
+                                <input
+                                    v-model="loginForm.email"
+                                    type="email"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-bamboo-500 focus:ring-2 focus:ring-bamboo-200 outline-none transition-all duration-300 bg-white/90"
+                                    placeholder="Masukkan email Anda"
+                                    :class="{ 'border-red-500': errors.loginEmail }"
+                                >
+                                <p v-if="errors.loginEmail" class="text-red-500 text-xs mt-1">{{ errors.loginEmail }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-bamboo-800 mb-2">Password</label>
+                                <div class="relative">
+                                    <input
+                                        v-model="loginForm.password"
+                                        :type="showLoginPassword ? 'text' : 'password'"
+                                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-bamboo-500 focus:ring-2 focus:ring-bamboo-200 outline-none transition-all duration-300 bg-white/90 pr-12"
+                                        placeholder="Masukkan password"
+                                        :class="{ 'border-red-500': errors.loginPassword }"
+                                    >
+                                    <button
+                                        type="button"
+                                        @click="showLoginPassword = !showLoginPassword"
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-bamboo-600 transition-colors"
+                                    >
+                                        <svg v-if="!showLoginPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <p v-if="errors.loginPassword" class="text-red-500 text-xs mt-1">{{ errors.loginPassword }}</p>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <label class="flex items-center text-bamboo-700">
+                                    <input v-model="loginForm.rememberMe" type="checkbox" class="rounded border-gray-300 text-bamboo-500 focus:ring-bamboo-200 mr-2">
+                                    Ingat saya
+                                </label>
+                                <a href="#" class="text-bamboo-600 hover:text-bamboo-800 font-medium transition-colors">Lupa password?</a>
+                            </div>
+                            <button
+                                @click="handleLogin"
+                                :disabled="loading"
+                                class="w-full bg-gradient-to-r from-bamboo-500 to-bamboo-600 text-white py-3 px-4 rounded-xl font-medium hover:from-bamboo-600 hover:to-bamboo-700 transform hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <span v-if="!loading">Masuk</span>
+                                <span v-else>Memproses...</span>
+                            </button>
+                        </div>
+                    </transition>
+
+                    <!-- Register Form -->
+                    <transition name="slide-fade">
+                        <div v-if="activeTab === 'register'" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-bamboo-800 mb-2">Username</label>
+                                    <input
+                                        v-model="registerForm.username"
+                                        type="text"
+                                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-bamboo-500 focus:ring-2 focus:ring-bamboo-200 outline-none transition-all duration-300 bg-white/90"
+                                        placeholder="Username"
+                                        :class="{ 'border-red-500': errors.username }"
+                                    >
+                                    <p v-if="errors.username" class="text-red-500 text-xs mt-1">{{ errors.username }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-bamboo-800 mb-2">Nama Lengkap</label>
+                                    <input
+                                        v-model="registerForm.full_name"
+                                        type="text"
+                                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-bamboo-500 focus:ring-2 focus:ring-bamboo-200 outline-none transition-all duration-300 bg-white/90"
+                                        placeholder="Nama lengkap"
+                                        :class="{ 'border-red-500': errors.full_name }"
+                                    >
+                                    <p v-if="errors.full_name" class="text-red-500 text-xs mt-1">{{ errors.full_name }}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-bamboo-800 mb-2">Email</label>
+                                <input
+                                    v-model="registerForm.email"
+                                    type="email"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-bamboo-500 focus:ring-2 focus:ring-bamboo-200 outline-none transition-all duration-300 bg-white/90"
+                                    placeholder="email@example.com"
+                                    :class="{ 'border-red-500': errors.email }"
+                                >
+                                <p v-if="errors.email" class="text-red-500 text-xs mt-1">{{ errors.email }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-bamboo-800 mb-2">Role</label>
+                                <select
+                                    v-model="registerForm.role"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-bamboo-500 focus:ring-2 focus:ring-bamboo-200 outline-none transition-all duration-300 bg-white/90"
+                                    :class="{ 'border-red-500': errors.role }"
+                                >
+                                    <option value="decision maker">Decision Maker</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="user">User</option>
+                                </select>
+                                <p v-if="errors.role" class="text-red-500 text-xs mt-1">{{ errors.role }}</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-bamboo-800 mb-2">Password</label>
+                                <div class="relative">
+                                    <input
+                                        v-model="registerForm.password"
+                                        :type="showRegisterPassword ? 'text' : 'password'"
+                                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-bamboo-500 focus:ring-2 focus:ring-bamboo-200 outline-none transition-all duration-300 bg-white/90 pr-12"
+                                        placeholder="Buat password yang kuat"
+                                        :class="{ 'border-red-500': errors.password }"
+                                    >
+                                    <button
+                                        type="button"
+                                        @click="showRegisterPassword = !showRegisterPassword"
+                                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-bamboo-600 transition-colors"
+                                    >
+                                        <svg v-if="!showRegisterPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <p v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</p>
+                            </div>
+                            <div class="text-sm">
+                                <label class="flex items-center text-bamboo-700">
+                                    <input v-model="registerForm.agreeToTerms" type="checkbox" class="rounded border-gray-300 text-bamboo-500 focus:ring-bamboo-200 mr-2">
+                                    Saya menyetujui <a href="#" class="text-bamboo-600 hover:text-bamboo-800 font-medium">Syarat & Ketentuan</a> dan <a href="#" class="text-bamboo-600 hover:text-bamboo-800 font-medium">Kebijakan Privasi</a>
+                                </label>
+                                <p v-if="errors.agreeToTerms" class="text-red-500 text-xs mt-1">{{ errors.agreeToTerms }}</p>
+                            </div>
+                            <button
+                                @click="handleRegister"
+                                :disabled="loading"
+                                class="w-full bg-gradient-to-r from-earth-500 to-bamboo-500 text-white py-3 px-4 rounded-xl font-medium hover:from-earth-600 hover:to-bamboo-600 transform hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <span v-if="!loading">Buat Akun</span>
+                                <span v-else>Memproses...</span>
+                            </button>
+                        </div>
+                    </transition>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center mt-6">
+                    <p class="text-sm text-bamboo-600">
+                        Bergabunglah dalam pengembangan produk berkelanjutan berbasis bambu
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <transition name="bounce-in">
+            <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div class="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+                    <div class="w-16 h-16 bg-bamboo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg v-if="modalType === 'success'" class="w-8 h-8 text-bamboo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <svg v-else class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-bamboo-800 mb-2">{{ modalTitle }}</h3>
+                    <p class="text-bamboo-600 mb-6">{{ modalMessage }}</p>
+                    <button
+                        @click="closeModal"
+                        class="bg-bamboo-500 text-white px-8 py-3 rounded-lg hover:bg-bamboo-600 transition-colors font-medium"
+                    >
+                        {{ modalType === 'success' ? 'Lanjutkan' : 'Tutup' }}
+                    </button>
+                </div>
+            </div>
+        </transition>
+    </div>
+   <script type="module" src="../js/user/login_and_register.js"></script>
+</body>
+</html>

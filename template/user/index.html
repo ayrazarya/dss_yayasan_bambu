@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - DSS</title>
+</head>
+<body>
+    <div id="app">
+        <h2>Selamat Datang, {{ user.full_name || user.username }}</h2>
+        <p>Email: {{ user.email }}</p>
+        <p>Role: {{ user.role }}</p>
+        <p>Status Akun: <span :style="{ color: user.is_active ? 'green' : 'red' }">{{ user.is_active ? 'Aktif' : 'Nonaktif' }}</span></p>
+        <button @click="logout">Logout</button>
+    </div>
+
+    <script src="https://unpkg.com/vue@3"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    user: {}
+                }
+            },
+            methods: {
+                logout() {
+                    localStorage.removeItem('userData');
+                    sessionStorage.removeItem('userData');
+                    window.location.href = 'login.html'; // Ganti sesuai nama file login kamu
+                }
+            },
+            mounted() {
+                const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+                if (userData) {
+                    try {
+                        this.user = JSON.parse(userData);
+                    } catch (e) {
+                        console.error('User data corrupt:', e);
+                        this.logout();
+                    }
+                } else {
+                    // Kalau tidak login, kembalikan ke login
+                    window.location.href = 'login.html';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

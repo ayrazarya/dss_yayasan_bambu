@@ -1,0 +1,282 @@
+// API Configuration
+import { API_BASE_URL } from '../utils/api_base_url.js';
+
+// JWT Token Management
+class TokenManager {
+    static setToken(token) {
+        const tokenData = {
+            token: token,
+            timestamp: Date.now()
+        };
+        // Store in memory instead of localStorage
+        window.adminToken = tokenData;
+    }
+
+    static getToken() {
+        if (window.adminToken) {
+            const { token, timestamp } = window.adminToken;
+            // Check if token is expired (24 hours)
+            if (Date.now() - timestamp > 24 * 60 * 60 * 1000) {
+                this.removeToken();
+                return null;
+            }
+            return token;
+        }
+        return null;
+    }
+
+    static removeToken() {
+        delete window.adminToken;
+    }
+
+    static isAuthenticated() {
+        return this.getToken() !== null;
+    }
+}
+
+// API Service with JWT
+class ApiService {
+    static async request(url, options = {}) {
+        const token = TokenManager.getToken();
+
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` })
+            }
+        };
+
+        const mergedOptions = {
+            ...defaultOptions,
+            ...options,
+            headers: {
+                ...defaultOptions.headers,
+                ...options.headers
+            }
+        };
+
+        try {
+            const response = await axios(url, mergedOptions);
+            return response;
+        } catch (error) {
+            // Handle JWT expiration
+            if (error.response?.status === 401) {
+                TokenManager.removeToken();
+                // Redirect to login if on protected page
+                if (window.location.pathname.includes('dashboard')) {
+                    window.location.href = '/yayasan_bambu_dss/template/admin/login.html';
+                }
+            }
+            throw error;
+        }
+    }
+
+    static async login(credentials) {
+        return await this.request(`${API_BASE_URL}admin/login`, {
+            method: 'POST',
+            data: credentials
+        });
+    }
+
+    static async register(userData) {
+        return await this.request(`${API_BASE_URL}admin/register`, {
+            method: 'POST',
+            data: userData
+        });
+    }
+
+    static async getProfile() {
+        return await this.request(`${API_BASE_URL}admin/profile`, {
+            method: 'GET'
+        });
+    }
+
+    static async refreshToken() {
+        return await this.request(`${API_BASE_URL}admin/refresh-token`, {
+            method: 'POST'
+        });
+    }
+}
+
+// Vue Application
+const { createApp } = Vue;
+
+createApp({
+    data() {
+        return {
+            isLogin: true,
+            loading: false,
+            showPassword: false,
+            showRegPassword: false,
+            errorMessage: '',
+            successMessage: '',
+            loginForm: {
+                username: '',
+                password: ''
+            },
+            registerForm: {
+                username: '',
+                email: '',
+                full_name: '',
+                password: '',
+                is_active: true
+            }
+        }
+    },
+
+    mounted() {
+        // Check if user is already authenticated
+        this.checkAuthentication();
+
+        // Auto-refresh token every 23 hours
+        this.setupTokenRefresh();
+    },
+
+    methods: {
+        checkAuthentication() {
+            if (TokenManager.isAuthenticated()) {
+                // User is already logged in, redirect to dashboard
+                this.redirectToDashboard();
+            }
+        },
+
+        setupTokenRefresh() {
+            // Refresh token every 23 hours
+            setInterval(async () => {
+                if (TokenManager.isAuthenticated()) {
+                    try {
+                        await ApiService.refreshToken();
+                        console.log('Token refreshed successfully');
+                    } catch (error) {
+                        console.error('Token refresh failed:', error);
+                        this.handleLogout();
+                    }
+                }
+            }, 23 * 60 * 60 * 1000); // 23 hours
+        },
+
+        async handleLogin() {
+            this.loading = true;
+            this.errorMessage = '';
+            this.successMessage = '';
+
+            try {
+                const response = await ApiService.login(this.loginForm);
+
+                if (response.data && response.data.access_token) {
+                    // Store JWT token
+                    TokenManager.setToken(response.data.access_token);
+
+                    this.successMessage = `Welcome back, ${response.data.username || 'Admin'}!`;
+
+                    // Store admin data in memory
+                    window.adminData = {
+                        admin_id: response.data.admin_id,
+                        username: response.data.username,
+                        email: response.data.email,
+                        full_name: response.data.full_name,
+                        is_active: response.data.is_active
+                    };
+
+                    // Clear form
+                    this.loginForm = { username: '', password: '' };
+
+                    // Redirect to dashboard after 2 seconds
+                    setTimeout(() => {
+                        this.redirectToDashboard();
+                    }, 2000);
+                } else {
+                    this.errorMessage = 'Invalid response from server';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                if (error.response) {
+                    this.errorMessage = error.response.data.detail || 'Login failed';
+                } else {
+                    this.errorMessage = 'Network error. Please check your connection.';
+                }
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async handleRegister() {
+            this.loading = true;
+            this.errorMessage = '';
+            this.successMessage = '';
+
+            try {
+                const response = await ApiService.register(this.registerForm);
+
+                if (response.data) {
+                    this.successMessage = `Account created successfully for ${response.data.username}! You can now login.`;
+
+                    // Clear form
+                    this.registerForm = {
+                        username: '',
+                        email: '',
+                        full_name: '',
+                        password: '',
+                        is_active: true
+                    };
+
+                    // Switch to login form after 2 seconds
+                    setTimeout(() => {
+                        this.isLogin = true;
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                if (error.response) {
+                    this.errorMessage = error.response.data.detail || 'Registration failed';
+                } else {
+                    this.errorMessage = 'Network error. Please check your connection.';
+                }
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        handleLogout() {
+            TokenManager.removeToken();
+            delete window.adminData;
+            this.successMessage = 'You have been logged out successfully';
+
+            // Clear forms
+            this.loginForm = { username: '', password: '' };
+            this.registerForm = {
+                username: '',
+                email: '',
+                full_name: '',
+                password: '',
+                is_active: true
+            };
+        },
+
+        redirectToDashboard() {
+            window.location.href = '/yayasan_bambu_dss/template/admin/dashboard.html';
+        },
+
+        clearMessages() {
+            this.errorMessage = '';
+            this.successMessage = '';
+        },
+
+        togglePasswordVisibility(field) {
+            if (field === 'login') {
+                this.showPassword = !this.showPassword;
+            } else if (field === 'register') {
+                this.showRegPassword = !this.showRegPassword;
+            }
+        }
+    },
+
+    watch: {
+        isLogin() {
+            this.clearMessages();
+        }
+    }
+}).mount('#app');
+
+// Export for use in other modules
+export { TokenManager, ApiService };

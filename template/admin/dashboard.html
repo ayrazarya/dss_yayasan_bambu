@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="../js/utils/tailwindconfig.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="app">
+        <nav class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-forest-500 p-2 rounded-lg">
+                        <i class="fas fa-leaf text-white text-xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button @click="logout"
+                            class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors duration-200">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex">
+            <aside class="w-64 bg-white shadow-sm min-h-screen border-r border-gray-200">
+                <div class="p-6">
+                    <div class="bg-gradient-to-r from-forest-500 to-forest-600 rounded-xl p-4 text-white mb-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-shield text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">{{ admin?.full_name || 'Administrator' }}</h3>
+                                <p class="text-forest-100 text-sm opacity-90">{{ admin?.email || 'admin@company.com' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <nav class="space-y-2">
+                    <a href="dashboard.html" class="flex items-center space-x-3 px-4 py-3 text-forest-700 bg-forest-50 rounded-lg font-medium">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="Ranking.html" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-forest-700 hover:bg-forest-50 rounded-lg transition-colors">
+                        <i class="fas fa-medal"></i>
+                        <span>Ranking</span>
+                    </a>
+                     <a href="Transaksi.html" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-forest-700 hover:bg-forest-50 rounded-lg transition-colors">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Transaksi</span>
+                    </a>
+                    <a href="Analytics" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-forest-700 hover:bg-forest-50 rounded-lg transition-colors">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Analytics</span>
+                    </a>
+                      <a href="Trend" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-forest-700 hover:bg-forest-50 rounded-lg transition-colors">
+                        <i class="fas fa-chart-area"></i>
+                        <span>Trend</span>
+                    </a>
+                </nav>
+                </div>
+            </aside>
+
+            <main class="flex-1 p-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Total Products</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1">{{ products.length }}</p>
+                                <p class="text-xs text-gray-400 mt-1">+12% from last month</p>
+                            </div>
+                            <div class="bg-sky-light p-3 rounded-lg">
+                                <i class="fas fa-box text-sky-dark text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Active Products</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1">{{ activeProducts }}</p>
+                                <p class="text-xs text-forest-600 mt-1">{{ activePercentage }}% active</p>
+                            </div>
+                            <div class="bg-forest-100 p-3 rounded-lg">
+                                <i class="fas fa-check-circle text-forest-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Total Investment</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1">Rp{{ totalInvestment.toLocaleString('id-ID') }}</p>
+                                <p class="text-xs text-sand-dark mt-1">Development costs</p>
+                            </div>
+                            <div class="bg-sand-light p-3 rounded-lg">
+                                <i class="fas fa-dollar-sign text-sand-dark text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm font-medium">Avg Unit Cost</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1">Rp{{ parseFloat(averageUnitCost).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+                                <p class="text-xs text-gray-400 mt-1">Per unit production</p>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-lg">
+                                <i class="fas fa-calculator text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center space-x-2">
+                                <i class="fas fa-chart-bar text-forest-600"></i>
+                                <span>Development vs Production Costs</span>
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div style="position: relative; height: 300px;">
+                                <canvas id="costChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center space-x-2">
+                                <i class="fas fa-chart-pie text-forest-600"></i>
+                                <span>Product Status Distribution</span>
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div style="position: relative; height: 300px;">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
+                                    <i class="fas fa-list text-forest-600"></i>
+                                    <span>Products List</span>
+                                </h2>
+                                <span class="bg-forest-100 text-forest-800 text-sm font-medium px-3 py-1 rounded-full">
+                                    {{ products.length }} items
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            <div v-if="products.length === 0" class="text-center py-12">
+                                <i class="fas fa-box-open text-gray-300 text-4xl mb-4"></i>
+                                <p class="text-gray-500">No products found. Add your first product!</p>
+                            </div>
+
+                            <div v-else class="space-y-4">
+                                <div v-for="product in products" :key="product.product_id"
+                                     class="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-10 h-10 bg-forest-500 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-cube text-white"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">{{ product.name }}</h3>
+                                            <div class="flex items-center space-x-4 mt-1">
+                                                <span class="text-sm text-gray-500">
+                                                    Dev: Rp{{ (product.development_cost || 0).toLocaleString('id-ID') }}
+                                                </span>
+                                                <span class="text-sm text-gray-500">
+                                                    Unit: Rp{{ (product.production_cost_per_unit || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                                                </span>
+                                                <span :class="getStatusClass(product.status)">
+                                                    {{ product.status || 'No status' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button @click="deleteProduct(product.product_id)"
+                                            class="bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-lg transition-colors">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-6 border-b border-gray-200">
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center space-x-2">
+                                <i class="fas fa-plus-circle text-forest-600"></i>
+                                <span>Add New Product</span>
+                            </h3>
+                        </div>
+
+                        <div class="p-6">
+                            <form @submit.prevent="addProduct" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                                    <input v-model="newProduct.name"
+                                           type="text"
+                                           placeholder="Enter product name"
+                                           required
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-forest-500 transition-colors" />
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Development Cost</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-3 text-gray-500">Rp</span>
+                                        <input v-model="newProduct.development_cost"
+                                               type="number"
+                                               step="0.01"
+                                               placeholder="0"
+                                               required
+                                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-forest-500 transition-colors" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Production Cost per Unit</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-3 text-gray-500">Rp</span>
+                                        <input v-model="newProduct.production_cost_per_unit"
+                                               type="number"
+                                               step="0.01"
+                                               placeholder="0.00"
+                                               required
+                                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-forest-500 transition-colors" />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                    <select v-model="newProduct.status"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-forest-500 transition-colors">
+                                        <option value="">Select status</option>
+                                        <option value="Disetujui">Disetujui</option>
+                                        <option value="Ditolak">Ditolak</option>
+                                        <option value="Calon">Calon</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit"
+                                        class="w-full bg-forest-500 hover:bg-forest-600 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Add Product</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script type="module" src="../js/admin/dashboard.js"></script>
+</body>
+</html>
