@@ -80,7 +80,7 @@ createApp({
         logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('adminData');
-                window.location.href = '../../admin/admin_login_register.html';
+                window.location.href = '/yayasan_bambu_dss/template/admin/admin_login_register.html';
             }
         },
         async fetchProducts() {

@@ -1,282 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <title>Dashboard - DSS</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="module" src="../js/utils/tailwindconfig.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50">
     <div id="app">
-        <nav class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-forest-500 p-2 rounded-lg">
-                        <i class="fas fa-leaf text-white text-xl"></i>
-                    </div>
-                    <h1 class="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+        <!-- Sidebar -->
+        <div class="flex h-screen">
+            <div class="hidden md:flex flex-col w-64 bg-bamboo-800 text-white">
+                <div class="flex items-center justify-center h-16 px-4 bg-bamboo-900">
+                    <span class="text-xl font-bold">DSS</span>
                 </div>
-
-                <div class="flex items-center space-x-4">
-                    <button @click="logout"
-                            class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors duration-200">
-                        <i class="fas fa-sign-out-alt"></i>
+                <div class="flex flex-col flex-grow px-4 py-8 overflow-y-auto">
+                    <div class="flex flex-col space-y-1">
+                        <a href="#" class="flex items-center px-4 py-3 text-white bg-bamboo-700 rounded-lg">
+                            <i class="fas fa-tachometer-alt mr-3"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-3 text-bamboo-200 hover:bg-bamboo-700 rounded-lg">
+                            <i class="fas fa-user mr-3"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-3 text-bamboo-200 hover:bg-bamboo-700 rounded-lg">
+                            <i class="fas fa-cog mr-3"></i>
+                            <span>Settings</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="px-4 py-4 border-t border-bamboo-700">
+                    <button @click="logout" class="flex items-center w-full px-4 py-2 text-bamboo-200 hover:bg-bamboo-700 rounded-lg">
+                        <i class="fas fa-sign-out-alt mr-3"></i>
                         <span>Logout</span>
                     </button>
                 </div>
             </div>
-        </nav>
 
-        <div class="flex">
-            <aside class="w-64 bg-white shadow-sm min-h-screen border-r border-gray-200">
-                <div class="p-6">
-                    <div class="bg-gradient-to-r from-forest-500 to-forest-600 rounded-xl p-4 text-white mb-6">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-user-shield text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-semibold">{{ admin?.full_name || 'Administrator' }}</h3>
-                                <p class="text-forest-100 text-sm opacity-90">{{ admin?.email || 'admin@company.com' }}</p>
-                            </div>
-                        </div>
+            <!-- Main Content -->
+            <div class="flex flex-col flex-1 overflow-hidden">
+                <!-- Top Navigation -->
+                <div class="flex items-center justify-between h-16 px-6 bg-white border-b">
+                    <div class="flex items-center">
+                        <button class="md:hidden text-gray-500">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <span class="ml-4 text-lg font-medium">Dashboard</span>
                     </div>
-
-                    <nav class="space-y-2">
-                    <a href="dashboard.html" class="flex items-center space-x-3 px-4 py-3 text-forest-700 bg-forest-50 rounded-lg font-medium">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="Ranking.html" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-forest-700 hover:bg-forest-50 rounded-lg transition-colors">
-                        <i class="fas fa-medal"></i>
-                        <span>Ranking</span>
-                    </a>
-                     <a href="Transaksi.html" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-forest-700 hover:bg-forest-50 rounded-lg transition-colors">
-                        <i class="fas fa-exchange-alt"></i>
-                        <span>Transaksi</span>
-                    </a>
-                    <a href="Analytics" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-forest-700 hover:bg-forest-50 rounded-lg transition-colors">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Analytics</span>
-                    </a>
-                      <a href="Trend" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:text-forest-700 hover:bg-forest-50 rounded-lg transition-colors">
-                        <i class="fas fa-chart-area"></i> 
-                        <span>Trend</span>
-                    </a>
-                </nav>
-                </div>
-            </aside>
-
-            <main class="flex-1 p-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-sm font-medium">Total Products</p>
-                                <p class="text-3xl font-bold text-gray-900 mt-1">{{ products.length }}</p>
-                                <p class="text-xs text-gray-400 mt-1">+12% from last month</p>
-                            </div>
-                            <div class="bg-sky-light p-3 rounded-lg">
-                                <i class="fas fa-box text-sky-dark text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-sm font-medium">Active Products</p>
-                                <p class="text-3xl font-bold text-gray-900 mt-1">{{ activeProducts }}</p>
-                                <p class="text-xs text-forest-600 mt-1">{{ activePercentage }}% active</p>
-                            </div>
-                            <div class="bg-forest-100 p-3 rounded-lg">
-                                <i class="fas fa-check-circle text-forest-600 text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-sm font-medium">Total Investment</p>
-                                <p class="text-3xl font-bold text-gray-900 mt-1">Rp{{ totalInvestment.toLocaleString('id-ID') }}</p>
-                                <p class="text-xs text-sand-dark mt-1">Development costs</p>
-                            </div>
-                            <div class="bg-sand-light p-3 rounded-lg">
-                                <i class="fas fa-dollar-sign text-sand-dark text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 text-sm font-medium">Avg Unit Cost</p>
-                                <p class="text-3xl font-bold text-gray-900 mt-1">Rp{{ parseFloat(averageUnitCost).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
-                                <p class="text-xs text-gray-400 mt-1">Per unit production</p>
-                            </div>
-                            <div class="bg-purple-100 p-3 rounded-lg">
-                                <i class="fas fa-calculator text-purple-600 text-xl"></i>
-                            </div>
+                    <div class="flex items-center">
+                        <div class="relative">
+                            <button class="flex items-center focus:outline-none">
+                                <div class="w-8 h-8 rounded-full bg-bamboo-500 flex items-center justify-center text-white">
+                                    {{ userInitials }}
+                                </div>
+                                <span class="ml-2 text-sm font-medium hidden md:block">{{ user.full_name || user.username }}</span>
+                                <i class="fas fa-chevron-down ml-1 text-xs hidden md:block"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-                        <div class="p-6 border-b border-gray-200">
-                            <h3 class="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                                <i class="fas fa-chart-bar text-forest-600"></i>
-                                <span>Development vs Production Costs</span>
-                            </h3>
-                        </div>
-                        <div class="p-6">
-                            <div style="position: relative; height: 300px;">
-                                <canvas id="costChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-                        <div class="p-6 border-b border-gray-200">
-                            <h3 class="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                                <i class="fas fa-chart-pie text-forest-600"></i>
-                                <span>Product Status Distribution</span>
-                            </h3>
-                        </div>
-                        <div class="p-6">
-                            <div style="position: relative; height: 300px;">
-                                <canvas id="statusChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200">
-                        <div class="p-6 border-b border-gray-200">
-                            <div class="flex items-center justify-between">
-                                <h2 class="text-xl font-bold text-gray-900 flex items-center space-x-2">
-                                    <i class="fas fa-list text-forest-600"></i>
-                                    <span>Products List</span>
-                                </h2>
-                                <span class="bg-forest-100 text-forest-800 text-sm font-medium px-3 py-1 rounded-full">
-                                    {{ products.length }} items
-                                </span>
-                            </div>
+                <!-- Content -->
+                <div class="flex-1 overflow-auto p-6">
+                    <div class="max-w-4xl mx-auto">
+                        <!-- Welcome Card -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome back, {{ user.full_name || user.username }}!</h2>
+                            <p class="text-gray-600">Here's what's happening with your account today.</p>
                         </div>
 
-                        <div class="p-6">
-                            <div v-if="products.length === 0" class="text-center py-12">
-                                <i class="fas fa-box-open text-gray-300 text-4xl mb-4"></i>
-                                <p class="text-gray-500">No products found. Add your first product!</p>
-                            </div>
-
-                            <div v-else class="space-y-4">
-                                <div v-for="product in products" :key="product.product_id"
-                                     class="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="w-10 h-10 bg-forest-500 rounded-lg flex items-center justify-center">
-                                            <i class="fas fa-cube text-white"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="font-semibold text-gray-900">{{ product.name }}</h3>
-                                            <div class="flex items-center space-x-4 mt-1">
-                                                <span class="text-sm text-gray-500">
-                                                    Dev: Rp{{ (product.development_cost || 0).toLocaleString('id-ID') }}
-                                                </span>
-                                                <span class="text-sm text-gray-500">
-                                                    Unit: Rp{{ (product.production_cost_per_unit || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
-                                                </span>
-                                                <span :class="getStatusClass(product.status)">
-                                                    {{ product.status || 'No status' }}
-                                                </span>
-                                            </div>
-                                        </div>
+                        <!-- User Info Card -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-white rounded-xl shadow-sm p-6">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">Account Information</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <p class="text-sm text-gray-500">Username</p>
+                                        <p class="font-medium">{{ user.username }}</p>
                                     </div>
-
-                                    <button @click="deleteProduct(product.product_id)"
-                                            class="bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-lg transition-colors">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-                        <div class="p-6 border-b border-gray-200">
-                            <h3 class="text-lg font-bold text-gray-900 flex items-center space-x-2">
-                                <i class="fas fa-plus-circle text-forest-600"></i>
-                                <span>Add New Product</span>
-                            </h3>
-                        </div>
-
-                        <div class="p-6">
-                            <form @submit.prevent="addProduct" class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
-                                    <input v-model="newProduct.name"
-                                           type="text"
-                                           placeholder="Enter product name"
-                                           required
-                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-forest-500 transition-colors" />
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Development Cost</label>
-                                    <div class="relative">
-                                        <span class="absolute left-3 top-3 text-gray-500">Rp</span>
-                                        <input v-model="newProduct.development_cost"
-                                               type="number"
-                                               step="0.01"
-                                               placeholder="0"
-                                               required
-                                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-forest-500 transition-colors" />
+                                    <div>
+                                        <p class="text-sm text-gray-500">Email</p>
+                                        <p class="font-medium">{{ user.email }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Role</p>
+                                        <p class="font-medium capitalize">{{ user.role }}</p>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Production Cost per Unit</label>
-                                    <div class="relative">
-                                        <span class="absolute left-3 top-3 text-gray-500">Rp</span>
-                                        <input v-model="newProduct.production_cost_per_unit"
-                                               type="number"
-                                               step="0.01"
-                                               placeholder="0.00"
-                                               required
-                                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-forest-500 transition-colors" />
+                            <div class="bg-white rounded-xl shadow-sm p-6">
+                                <h3 class="text-lg font-medium text-gray-800 mb-4">Account Status</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <p class="text-sm text-gray-500">Status</p>
+                                        <p class="font-medium">
+                                            <span :class="user.is_active ? 'bg-bamboo-100 text-bamboo-800' : 'bg-red-100 text-red-800'" class="px-3 py-1 rounded-full text-xs font-medium">
+                                                {{ user.is_active ? 'Active' : 'Inactive' }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Last Login</p>
+                                        <p class="font-medium">{{ formattedDate }}</p>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
 
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                                    <select v-model="newProduct.status"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-forest-500 focus:border-forest-500 transition-colors">
-                                        <option value="">Select status</option>
-                                        <option value="Disetujui">Disetujui</option>
-                                        <option value="Ditolak">Ditolak</option>
-                                        <option value="Calon">Calon</option>
-                                    </select>
-                                </div>
-
-                                <button type="submit"
-                                        class="w-full bg-forest-500 hover:bg-forest-600 text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
-                                    <i class="fas fa-plus"></i>
-                                    <span>Add Product</span>
+                        <!-- Quick Actions -->
+                        <div class="bg-white rounded-xl shadow-sm p-6">
+                            <h3 class="text-lg font-medium text-gray-800 mb-4">Quick Actions</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <button class="flex flex-col items-center justify-center p-4 rounded-lg bg-bamboo-50 hover:bg-bamboo-100 text-bamboo-800">
+                                    <i class="fas fa-user-edit text-xl mb-2"></i>
+                                    <span class="text-sm">Edit Profile</span>
                                 </button>
-                            </form>
+                                <button class="flex flex-col items-center justify-center p-4 rounded-lg bg-bamboo-50 hover:bg-bamboo-100 text-bamboo-800">
+                                    <i class="fas fa-key text-xl mb-2"></i>
+                                    <span class="text-sm">Change Password</span>
+                                </button>
+                                <button class="flex flex-col items-center justify-center p-4 rounded-lg bg-bamboo-50 hover:bg-bamboo-100 text-bamboo-800">
+                                    <i class="fas fa-bell text-xl mb-2"></i>
+                                    <span class="text-sm">Notifications</span>
+                                </button>
+                                <button @click="logout" class="flex flex-col items-center justify-center p-4 rounded-lg bg-red-50 hover:bg-red-100 text-red-800">
+                                    <i class="fas fa-sign-out-alt text-xl mb-2"></i>
+                                    <span class="text-sm">Logout</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     </div>
 
-    <script type="module" src="../js/admin/dashboard.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bamboo: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        earth: {
+                            50: '#faf7f0',
+                            100: '#f4ede0',
+                            200: '#e8d5b7',
+                            300: '#d9ba85',
+                            400: '#ca9c54',
+                            500: '#b8832d',
+                            600: '#a16c24',
+                            700: '#7c5320',
+                            800: '#5d3e18',
+                            900: '#3e2910',
+                        }
+                    }
+                }
+            }
+        }
+
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    user: {
+                        username: 'johndoe',
+                        email: 'john@example.com',
+                        role: 'admin',
+                        is_active: true,
+                        full_name: 'John Doe'
+                    }
+                }
+            },
+            computed: {
+                userInitials() {
+                    if (this.user.full_name) {
+                        return this.user.full_name.split(' ').map(n => n[0]).join('').toUpperCase();
+                    }
+                    return this.user.username.substring(0, 2).toUpperCase();
+                },
+                formattedDate() {
+                    return new Date().toLocaleString();
+                }
+            },
+            methods: {
+                logout() {
+                    localStorage.removeItem('userData');
+                    sessionStorage.removeItem('userData');
+                    window.location.href = 'login.html';
+                }
+            },
+            mounted() {
+                const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+                if (userData) {
+                    try {
+                        this.user = JSON.parse(userData);
+                    } catch (e) {
+                        console.error('User data corrupt:', e);
+                        this.logout();
+                    }
+                } else {
+                    window.location.href = 'login.html';
+                }
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>
