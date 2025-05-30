@@ -7,10 +7,4 @@ class MarketSurvey(Base):
     __tablename__ = 'market_surveys'
     survey_id = Column(Integer, primary_key=True)
     product_id = Column(Integer, ForeignKey('products.product_id'))
-    respondent_id = Column(Integer, ForeignKey('users.user_id'))
-    response_date = Column(DateTime)
-    rating = Column(Integer)
-    comments = Column(Text)
-
-    product = relationship('Product', back_populates='surveys')
-    respondent = relationship('User', back_populates='surveys')
+    form_response_id = Column(Text)

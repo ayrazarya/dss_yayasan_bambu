@@ -5,3 +5,4 @@ from .product import Product
 from .product_ranking import ProductRanking
 from .transaction import Transaction
 from .user import User
+from .survey_response import SurveyResponse
