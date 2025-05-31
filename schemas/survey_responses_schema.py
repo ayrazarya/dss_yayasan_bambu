@@ -1,25 +1,25 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel, EmailStr, ConfigDict
 from datetime import datetime
+from typing import Optional
+
 
 class SurveyResponseBase(BaseModel):
+    response_id: Optional[int] = None
     survey_id: int
-    email: Optional[EmailStr]
-    rating: Optional[float]
-    suggested_price: Optional[str]  # Since it’s Text, treating it as string
-    response_date: Optional[datetime]
+    email: Optional[EmailStr] = None
+    rating: Optional[float] = None
+    response_date: Optional[datetime] = None
+    fingerprint: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 class SurveyResponseCreate(SurveyResponseBase):
-    pass
+    response_id: None = None  # explicitly None during creation
+
 
 class SurveyResponseUpdate(SurveyResponseBase):
     pass
 
-class SurveyResponseInDBBase(SurveyResponseBase):
-    response_id: int
 
-    class Config:
-        orm_mode = True
-
-class SurveyResponse(SurveyResponseInDBBase):
-    pass
+class SurveyResponse(SurveyResponseBase):
+    response_id: int  # explicitly include ID for reads

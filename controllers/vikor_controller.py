@@ -8,11 +8,11 @@ class VikorController:
         self.db = db
 
     def _calculate_sales_score(self, product):
-        return sum(txn.quantity for mp in product.marketed_products for txn in mp.transactions)
+        return sum(txn.quantity for mp in product.marketed_products for txn in mp.transactions) #Ini ngakses produk yang udah dirilis lewat calon produk baru??
 
-    def _calculate_survey_score(self, product):
-        ratings = [s.rating for s in product.surveys if s.rating is not None]
-        return sum(ratings) / len(ratings) if ratings else 0.0
+    def _calculate_survey_score(self, product: Product):
+    #    ratings = [s.rating for s in product.surveys if s.rating is not None] // survey sudah tidak memiliki rating tapi di survey_response
+        return 1 #sum(ratings) / len(ratings) if ratings else 0.0 // perlu dipastikan data respon survey terbaru sebelum dijalankan
 
     def calculate_rankings(self):
         products = self.db.query(Product).all()

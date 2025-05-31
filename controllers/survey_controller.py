@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from typing import List
+from typing import List, Optional
 
 from models import MarketSurvey, SurveyResponse
 
@@ -87,50 +87,51 @@ def delete_survey_response(db: Session, response_id: int) -> None:
     db.delete(response)
     db.commit()
 
-def import_survey_responses_from_sheet(db: Session, spreadsheet_id: str, range_name: str) -> List[SurveyResponse]:
-    sheet_service = SheetService()
-    raw_data = sheet_service.get_sheet_data(spreadsheet_id, range_name) #spreadsheet_id should be market_surveys.form_response_id
+def update_responses_from_sheet(db: Session, survey_id: int) -> None:
+    survey: Optional[MarketSurvey] = db.query(MarketSurvey).get(survey_id)
+    
+    # Explicit check for None and form_id
+    if survey is None:
+        raise ValueError(f"Survey {survey_id} not found")
+    if not survey.form_response_id:
+        raise ValueError(f"Survey {survey_id} has no form ID")
 
-    if not raw_data or len(raw_data) < 2:
-        raise HTTPException(status_code=400, detail="No data found in the sheet")
+    sheet_responses = SheetService.get_form_responses(survey.form_response_id)
 
-    responses: List[SurveyResponse] = []
-    for row in raw_data[1:]:  # skip header
-        try:
-            response_date_str = row[0] if len(row) > 0 else None
-            email = row[1] if len(row) > 1 else None
-            rating1_str = row[8] if len(row) > 8 else None
-            rating2_str = row[10] if len(row) > 10 else None
-            suggested_price = row[9] if len(row) > 9 else None
+    for response in sheet_responses:
+        existing = get_response_by_fingerprint(
+            db,
+            response['fingerprint'],
+            survey_id
+        )
 
-            # Parse date
-            response_date = None
-            if response_date_str:
-                try:
-                    response_date = datetime.fromisoformat(response_date_str)
-                except ValueError:
-                    response_date = None
-
-            # Compute rating
-            rating1 = float(rating1_str) if rating1_str else None
-            rating2 = float(rating2_str) if rating2_str else None
-            if rating1 is not None and rating2 is not None:
-                rating = (rating1 + rating2) / 2
-            else:
-                rating = rating1 or rating2
-
-            # Create SurveyResponse
-            survey_response = SurveyResponse(
-                survey_id=None,  # You can set this if needed
-                email=email,
-                rating=rating,
-                suggested_price=suggested_price,
-                response_date=response_date
+        if existing:
+            # Update existing record
+            existing.rating = response['rating']
+        else:
+            # Create new response (using model_dump instead of dict)
+            new_response = SurveyResponse(
+                **SurveyResponseCreate(
+                    survey_id=survey_id,
+                    email=response['email'],
+                    rating=response['rating'],
+                    response_date=response['timestamp'],
+                    fingerprint=response['fingerprint']
+                ).model_dump()
             )
-            db.add(survey_response)
-            responses.append(survey_response)
-        except Exception as e:
-            print(f"Failed to process row {row}: {e}")
-
+            db.add(new_response)
     db.commit()
-    return responses
+
+def response_exists(db: Session, fingerprint: str, survey_id: int) -> bool:
+    """Check if a response with this fingerprint already exists"""
+    return db.query(SurveyResponse).filter(
+        SurveyResponse.fingerprint == fingerprint,
+        SurveyResponse.survey_id == survey_id
+    ).first() is not None
+
+def get_response_by_fingerprint(db: Session, fingerprint: str, survey_id: int) -> Optional[SurveyResponse]:
+    """Get existing response by fingerprint"""
+    return db.query(SurveyResponse).filter(
+        SurveyResponse.fingerprint == fingerprint,
+        SurveyResponse.survey_id == survey_id
+    ).first()
