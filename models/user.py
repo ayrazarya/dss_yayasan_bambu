@@ -14,5 +14,3 @@ class User(Base):
     is_active = Column(Boolean)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
-
-    surveys = relationship('MarketSurvey', back_populates='respondent')

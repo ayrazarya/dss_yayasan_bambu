@@ -9,5 +9,7 @@ class SurveyResponse(Base):
     survey_id = Column(Integer, ForeignKey('market_surveys.survey_id'))
     email = Column(String)
     rating = Column(Double)
-    suggested_price = (Text)
-    response_date = (TIMESTAMP)
+    response_date = Column(TIMESTAMP)
+    fingerprint = Column(String(32))
+
+    survey = relationship("MarketSurvey", back_populates="responses")

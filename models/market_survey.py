@@ -8,3 +8,6 @@ class MarketSurvey(Base):
     survey_id = Column(Integer, primary_key=True)
     product_id = Column(Integer, ForeignKey('products.product_id'))
     form_response_id = Column(Text)
+
+    product = relationship('Product', back_populates='surveys')
+    responses = relationship('SurveyResponse', back_populates='survey')

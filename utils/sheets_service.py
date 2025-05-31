@@ -4,40 +4,61 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import gspread
 from dotenv import load_dotenv
+from typing import List, Dict, Optional
+import hashlib
 
 class SheetService:
-    SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-    TOKEN_PATH = "token.json"
-
     def __init__(self):
-        load_dotenv()
-        creds = None
-
-        if os.path.exists(self.TOKEN_PATH):
-            creds = Credentials.from_authorized_user_file(self.TOKEN_PATH, self.SCOPES)
-
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(os.getenv("OAUTH_PATH"), self.SCOPES)
-                creds = flow.run_local_server(port=0)
-            with open(self.TOKEN_PATH, "w") as token:
-                token.write(creds.to_json())
-
-        self.creds = creds
-
-    def get_sheet_data(self, spreadsheet_id, range_name):
+        gc = gspread.oauth(
+            credentials_filename=os.getenv('OAUTH_PATH'),
+            authorized_user_filename=os.getenv('AUTH_TOKEN_PATH')
+        )
+        self.client = gc
+    
+    def get_form_responses(self, spreadsheet_id: str) -> List[Dict]:
+        """
+        Get form responses with only needed columns and calculated fields
+        using gspread for simpler API access
+        """
         try:
-            service = build("sheets", "v4", credentials=self.creds)
-            sheet = service.spreadsheets()
-            result = sheet.values().get(spreadsheetId=spreadsheet_id, range=range_name).execute()
-            values = result.get("values", [])
-            if not values:
-                print("No data found.")
-                return []
-            return values
-        except HttpError as err:
-            print(err)
+            # Open the spreadsheet and worksheet
+            spreadsheet = self.client.open_by_key(spreadsheet_id)
+            worksheet = spreadsheet.worksheet("Form Responses")
+            
+            # Get all records as dictionaries
+            kvp_data = worksheet.get_all_records()
+            
+            processed = []
+            for row in kvp_data:
+                try:
+                    # Create unique fingerprint for each response
+                    fingerprint = hashlib.md5(
+                        f"{row['Timestamp']}{row['Email Address']}".encode()
+                    ).hexdigest()
+                    
+                    # Calculate average rating from two columns
+                    rating1 = float(row.get('3. Seberapa tertarik anda dengan produk ini?', 0))
+                    rating2 = float(row.get('6. Seberapa besar kemungkinan anda akan membeli produk ini di waktu yang akan datang?', 0))
+                    avg_rating = (rating1 + rating2) / 2
+                    
+                    processed.append({
+                        'fingerprint': fingerprint,
+                        'email': row.get('Email Address'),
+                        'timestamp': row.get('Timestamp'),
+                        'rating': avg_rating,
+                        'raw_data': row  # Store complete data for audit
+                    })
+                except (ValueError, KeyError) as e:
+                    print(f"Skipping malformed row: {e}")
+                    continue
+                    
+            return processed
+            
+        except gspread.exceptions.APIError as e:
+            print(f"Google Sheets API error: {e}")
+            return []
+        except Exception as e:
+            print(f"Unexpected error: {e}")
             return []
