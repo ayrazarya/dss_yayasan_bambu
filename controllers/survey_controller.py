@@ -8,7 +8,9 @@ from models import MarketSurvey, SurveyResponse
 from schemas.market_surveys_schema import MarketSurveyCreate, MarketSurveyUpdate
 from schemas.survey_responses_schema import SurveyResponseCreate, SurveyResponseUpdate
 from utils.sheets_service import SheetService
+import logging
 
+logger = logging.getLogger(__name__)
 
 # MarketSurvey Logic
 def create_market_survey(db: Session, survey: MarketSurveyCreate) -> MarketSurvey:
@@ -48,6 +50,11 @@ def delete_market_survey(db: Session, survey_id: int) -> None:
     db.delete(survey)
     db.commit()
 
+def update_surveys_response_from_sheet(db:Session) -> None:
+    surveys = get_all_market_surveys(db)
+    for survey in surveys:
+        survey_id = survey.survey_id
+        update_responses_from_sheet(db, survey_id)
 
 # SurveyResponse Logic
 def create_survey_response(db: Session, response: SurveyResponseCreate) -> SurveyResponse:
@@ -88,39 +95,53 @@ def delete_survey_response(db: Session, response_id: int) -> None:
     db.commit()
 
 def update_responses_from_sheet(db: Session, survey_id: int) -> None:
+    logger.info(f"Starting update for survey {survey_id}")
     survey: Optional[MarketSurvey] = db.query(MarketSurvey).get(survey_id)
     
     # Explicit check for None and form_id
     if survey is None:
+        logger.error(f"Survey {survey_id} not found")
         raise ValueError(f"Survey {survey_id} not found")
     if not survey.form_response_id:
+        logger.error(f"Survey {survey_id} has no form ID")
         raise ValueError(f"Survey {survey_id} has no form ID")
 
-    sheet_responses = SheetService.get_form_responses(survey.form_response_id)
-
-    for response in sheet_responses:
-        existing = get_response_by_fingerprint(
-            db,
-            response['fingerprint'],
-            survey_id
-        )
-
-        if existing:
-            # Update existing record
-            existing.rating = response['rating']
-        else:
-            # Create new response (using model_dump instead of dict)
-            new_response = SurveyResponse(
-                **SurveyResponseCreate(
-                    survey_id=survey_id,
-                    email=response['email'],
-                    rating=response['rating'],
-                    response_date=response['timestamp'],
-                    fingerprint=response['fingerprint']
-                ).model_dump()
+    service = SheetService()
+    logger.info("Fetching sheet responses...")
+    sheet_responses = service.get_form_responses(survey.form_response_id)
+    logger.info(f"Found {len(sheet_responses)} responses in sheet")
+    try:
+        for response in sheet_responses:
+            existing = get_response_by_fingerprint(
+                db,
+                response['fingerprint'],
+                survey_id
             )
-            db.add(new_response)
-    db.commit()
+
+            if existing:
+                # Update existing record
+                logger.debug(f"Updating existing response ID {existing.response_id}")
+                existing.rating = response['rating']
+            else:
+                # Create new response (using model_dump instead of dict)
+                logger.debug("Creating new response")
+                new_response = SurveyResponse(
+                    **SurveyResponseCreate(
+                        survey_id=survey_id,
+                        email=response['email'],
+                        rating=response['rating'],
+                        response_date=response['timestamp'],
+                        fingerprint=response['fingerprint']
+                    ).model_dump()
+                )
+                db.add(new_response)
+        logger.info("Committing changes...")
+        db.commit()
+        logger.info("Update completed successfully")
+    except Exception as e:
+        db.rollback()
+        logger.error("Commit failed", exc_info=True)
+        raise
 
 def response_exists(db: Session, fingerprint: str, survey_id: int) -> bool:
     """Check if a response with this fingerprint already exists"""

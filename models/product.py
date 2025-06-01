@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, Date, Numeric, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
+from typing import List
 
 from utils.database import Base
 
@@ -16,4 +17,4 @@ class Product(Base):
 
     marketed_products = relationship('MarketedProduct', back_populates='product')
     rankings = relationship('ProductRanking', back_populates='product')
-    surveys = relationship('MarketSurvey', back_populates='product')
+    surveys: Mapped[List['MarketSurvey']] = relationship('MarketSurvey', back_populates='product')

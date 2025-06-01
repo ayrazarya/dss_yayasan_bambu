@@ -11,8 +11,16 @@ class VikorController:
         return sum(txn.quantity for mp in product.marketed_products for txn in mp.transactions) #Ini ngakses produk yang udah dirilis lewat calon produk baru??
 
     def _calculate_survey_score(self, product: Product):
-    #    ratings = [s.rating for s in product.surveys if s.rating is not None] // survey sudah tidak memiliki rating tapi di survey_response
-        return 1 #sum(ratings) / len(ratings) if ratings else 0.0 // perlu dipastikan data respon survey terbaru sebelum dijalankan
+        if not product.surveys:  # surveys should be the relationship to MarketSurvey
+            return 0.0
+        
+        all_ratings = []
+        for survey in product.surveys:
+            # Get all non-None ratings from survey responses
+            survey_ratings = [response.rating for response in survey.responses 
+                            if response.rating is not None]
+            all_ratings.extend(survey_ratings)
+        return sum(all_ratings) / len(all_ratings) if all_ratings else 0.0
 
     def calculate_rankings(self):
         products = self.db.query(Product).all()

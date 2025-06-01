@@ -6,6 +6,7 @@ from utils.database import get_db
 from models import Product, ProductRanking
 from schemas.product_ranking_schema import ProductRankingSchema
 import controllers.vikor_controller as favorit_controller
+import controllers.survey_controller as secondary_controller
 
 router = APIRouter()
 
@@ -14,6 +15,7 @@ router = APIRouter()
 def calculate_vikor(db: Session = Depends(get_db)):
     try:
         controller = favorit_controller.VikorController(db)
+        secondary_controller.update_surveys_response_from_sheet(controller.db)
         results = controller.calculate_rankings()
         return {"message": "VIKOR rankings calculated successfully", "data": results}
     except Exception as e:
