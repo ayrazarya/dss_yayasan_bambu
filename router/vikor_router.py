@@ -19,7 +19,10 @@ def calculate_vikor(db: Session = Depends(get_db)):
         results = controller.calculate_rankings()
         return {"message": "VIKOR rankings calculated successfully", "data": results}
     except Exception as e:
+        import traceback
+        print("ERROR:", traceback.format_exc())  # Bisa ganti ke logger.error
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @router.get("/rankings", response_model=List[ProductRankingSchema])
