@@ -12,10 +12,7 @@ import hashlib
 
 class SheetService:
     def __init__(self):
-        gc = gspread.oauth(
-            credentials_filename=os.getenv('OAUTH_PATH'),
-            authorized_user_filename=os.getenv('AUTH_TOKEN_PATH')
-        )
+        gc = gspread.service_account(filename=os.getenv('SERVICE_ACCOUNT_PATH'))
         self.client = gc
     
     def get_form_responses(self, spreadsheet_id: str) -> List[Dict]:
