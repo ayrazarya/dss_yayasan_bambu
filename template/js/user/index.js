@@ -13,6 +13,16 @@ import { API_BASE_URL } from '../utils/api_base_url.js'; // Pastikan path ini be
                   is_active: '',
                   full_name: ''
               });
+
+              const checkAuth = () => {
+                  const storedUserData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+                  if (!storedUserData) {
+                    window.location.href = '/yayasan_bambu_dss/template/user/user_login_register.html'; // Sesuaikan dengan path halaman login Anda
+                    return false;
+                  }
+                  return true;
+                };
+
               const mobileMenuOpen = ref(false);
               const dssCriteria = ref([
                   { id: 'C1', name: 'Biaya pengembangan awal (Rp)', type: 'cost', icon: 'fas fa-drafting-compass', colorClass: 'text-red-500' },
@@ -225,11 +235,13 @@ import { API_BASE_URL } from '../utils/api_base_url.js'; // Pastikan path ini be
               }, { deep: true });
 
               onMounted(() => {
+                  if (!checkAuth()) return;
                   loadUserData();
                   fetchExistingRankings();
-                  // Jika Anda ingin mengonfirmasi nilai API_BASE_URL saat komponen dimuat:
                   console.log('API Base URL digunakan:', apiBaseUrl.value);
+
               });
+
 
               return {
                   user, mobileMenuOpen, dssCriteria, dssResults, isDssLoading, dssError,

@@ -9,9 +9,6 @@ from utils.database import get_db
 router = APIRouter()
 
 
-@router.get("/", response_model=List[UserResponse])
-def list_users(db: Session = Depends(get_db)):
-    return user_controller.get_all_users(db)
 
 
 @router.get("/{user_id}", response_model=UserResponse)

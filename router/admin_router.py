@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from controllers.admin_controller import get_admin_by_username, hash_password, login_admin
-from schemas.admin_schema import AdminCreate, AdminLogin, AdminResponse
+from schemas.admin_schema import AdminCreate, AdminLogin, AdminResponse, AdminLoginResponse
 from models.admin import Admin
 from utils.database import get_db
 from datetime import datetime
@@ -36,10 +36,14 @@ def create_admin(admin_data: AdminCreate, db: Session = Depends(get_db)):
 
 
 # Login admin
-@router.post("/login", response_model=AdminResponse)
+@router.post("/login", response_model=AdminLoginResponse)
 def login(admin_data: AdminLogin, db: Session = Depends(get_db)):
-    admin = login_admin(db, admin_data)
-    return admin
+    login_result = login_admin(db, admin_data)
+    return {
+        "access_token": login_result["access_token"],
+        "token_type": "bearer",
+        "admin": login_result["admin"]
+    }
 
 
 

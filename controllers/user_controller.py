@@ -1,9 +1,14 @@
+
+
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from models.user import User
 from schemas.user_schema import UserCreate, UserUpdate, LoginRequest
 from passlib.context import CryptContext
 from datetime import datetime
+from utils.jwt_generate import create_access_token  # pastikan path ini sesuai
+from schemas.user_schema import LoginResponse
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -65,6 +70,7 @@ def delete_user(db: Session, user_id: int):
     return user
 
 
+
 def login_user(db: Session, login_data: LoginRequest):
     user = db.query(User).filter(User.email == login_data.email).first()
     if not user:
@@ -73,4 +79,19 @@ def login_user(db: Session, login_data: LoginRequest):
     if not pwd_context.verify(login_data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    return user
+    # Buat JWT token
+    access_token = create_access_token(data={"sub": user.email, "role": user.role})
+
+    return LoginResponse(
+        access_token=access_token,  # <-- BENAR: ini string JWT
+        user_id=user.user_id,
+        username=user.username,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role,
+        is_active=user.is_active
+    )
+
+
+
+

@@ -1,247 +1,262 @@
 import { API_BASE_URL } from '../utils/api_base_url.js';
 
-  const { createApp } = Vue;
+const { createApp } = Vue;
 
-  createApp({
-      data() {
-          return {
-              activeTab: 'login',
-              loading: false,
-              loadingText: '',
-              showLoginPassword: false,
-              showRegisterPassword: false,
-              showModal: false,
-              modalType: 'success',
-              modalTitle: '',
-              modalMessage: '',
+createApp({
+    data() {
+        return {
+            activeTab: 'login',
+            loading: false,
+            loadingText: '',
+            showLoginPassword: false,
+            showRegisterPassword: false,
+            showModal: false,
+            modalType: 'success',
+            modalTitle: '',
+            modalMessage: '',
 
-              loginForm: {
-                  email: '',
-                  password: '',
-                  rememberMe: false
-              },
-              registerForm: {
-                  username: '',
-                  email: '',
-                  full_name: '',
-                  role: 'decision maker',
-                  password: '',
-                  agreeToTerms: false
-              },
-              errors: {}
-          }
-      },
-      methods: {
-          validateLogin() {
-              this.errors = {};
-              let isValid = true;
+            loginForm: {
+                email: '',
+                password: '',
+                rememberMe: false
+            },
+            registerForm: {
+                username: '',
+                email: '',
+                full_name: '',
+                role: 'decision maker',
+                password: '',
+                agreeToTerms: false
+            },
+            errors: {}
+        }
+    },
+    methods: {
 
-              if (!this.loginForm.email) {
-                  this.errors.loginEmail = 'Email wajib diisi';
-                  isValid = false;
-              } else if (!this.isValidEmail(this.loginForm.email)) {
-                  this.errors.loginEmail = 'Format email tidak valid';
-                  isValid = false;
-              }
+        validateLogin() {
+            this.errors = {};
+            let isValid = true;
 
-              if (!this.loginForm.password) {
-                  this.errors.loginPassword = 'Password wajib diisi';
-                  isValid = false;
-              } else if (this.loginForm.password.length < 6) {
-                  this.errors.loginPassword = 'Password minimal 6 karakter';
-                  isValid = false;
-              }
+            if (!this.loginForm.email) {
+                this.errors.loginEmail = 'Email wajib diisi';
+                isValid = false;
+            } else if (!this.isValidEmail(this.loginForm.email)) {
+                this.errors.loginEmail = 'Format email tidak valid';
+                isValid = false;
+            }
 
-              return isValid;
-          },
+            if (!this.loginForm.password) {
+                this.errors.loginPassword = 'Password wajib diisi';
+                isValid = false;
+            } else if (this.loginForm.password.length < 6) {
+                this.errors.loginPassword = 'Password minimal 6 karakter';
+                isValid = false;
+            }
 
-          validateRegister() {
-              this.errors = {};
-              let isValid = true;
+            return isValid;
+        },
 
-              if (!this.registerForm.username) {
-                  this.errors.username = 'Username wajib diisi';
-                  isValid = false;
-              } else if (this.registerForm.username.length < 3) {
-                  this.errors.username = 'Username minimal 3 karakter';
-                  isValid = false;
-              }
+        validateRegister() {
+            this.errors = {};
+            let isValid = true;
 
-              if (!this.registerForm.email) {
-                  this.errors.email = 'Email wajib diisi';
-                  isValid = false;
-              } else if (!this.isValidEmail(this.registerForm.email)) {
-                  this.errors.email = 'Format email tidak valid';
-                  isValid = false;
-              }
+            if (!this.registerForm.username) {
+                this.errors.username = 'Username wajib diisi';
+                isValid = false;
+            } else if (this.registerForm.username.length < 3) {
+                this.errors.username = 'Username minimal 3 karakter';
+                isValid = false;
+            }
 
-              if (!this.registerForm.password) {
-                  this.errors.password = 'Password wajib diisi';
-                  isValid = false;
-              } else if (this.registerForm.password.length < 6) {
-                  this.errors.password = 'Password minimal 6 karakter';
-                  isValid = false;
-              }
+            if (!this.registerForm.email) {
+                this.errors.email = 'Email wajib diisi';
+                isValid = false;
+            } else if (!this.isValidEmail(this.registerForm.email)) {
+                this.errors.email = 'Format email tidak valid';
+                isValid = false;
+            }
 
-              if (!this.registerForm.agreeToTerms) {
-                  this.errors.agreeToTerms = 'Anda harus menyetujui syarat dan ketentuan';
-                  isValid = false;
-              }
+            if (!this.registerForm.password) {
+                this.errors.password = 'Password wajib diisi';
+                isValid = false;
+            } else if (this.registerForm.password.length < 6) {
+                this.errors.password = 'Password minimal 6 karakter';
+                isValid = false;
+            }
 
-              return isValid;
-          },
+            if (!this.registerForm.agreeToTerms) {
+                this.errors.agreeToTerms = 'Anda harus menyetujui syarat dan ketentuan';
+                isValid = false;
+            }
 
-          isValidEmail(email) {
-              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              return emailRegex.test(email);
-          },
+            return isValid;
+        },
 
-          async handleLogin() {
-              if (!this.validateLogin()) return;
+        isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        },
 
-              this.loading = true;
-              this.loadingText = 'Memverifikasi akun...';
+        async handleLogin() {
+            if (!this.validateLogin()) return;
 
-              try {
-                  const response = await axios.post(`${API_BASE_URL}users/login`, { // Changed here
-                      email: this.loginForm.email,
-                      password: this.loginForm.password
-                  });
+            this.loading = true;
+            this.loadingText = 'Memverifikasi akun...';
 
-                  // Simpan data user ke localStorage jika remember me dicentang
-                  if (this.loginForm.rememberMe) {
-                      localStorage.setItem('userData', JSON.stringify(response.data));
-                  } else {
-                      sessionStorage.setItem('userData', JSON.stringify(response.data));
-                  }
+            try {
+                const response = await axios.post(`${API_BASE_URL}users/login`, {
+                    email: this.loginForm.email,
+                    password: this.loginForm.password
+                });
 
-                  this.showSuccessModal('Login Berhasil!',
-                      `Selamat datang, ${response.data.full_name || response.data.username}! Anda berhasil masuk ke sistem DSS.`);
+                // Simpan access_token dan user info
+                const token = response.data.access_token;
+                const user = response.data;
 
-                  // Reset form
-                  this.loginForm = {
-                      email: '',
-                      password: '',
-                      rememberMe: false
-                  };
+                if (this.loginForm.rememberMe) {
+                    localStorage.setItem('access_token', token);
+                    localStorage.setItem('userData', JSON.stringify(user));
+                } else {
+                    sessionStorage.setItem('access_token', token);
+                    sessionStorage.setItem('userData', JSON.stringify(user));
+                }
 
-                  // Redirect ke dashboard setelah 2 detik
-                  setTimeout(() => {
-                      // window.location.href = '/dashboard';
-                      window.location.href = '/yayasan_bambu_dss/template/user/index.html'; // Ganti dengan URL dashboard('Redirect to dashboard');
-                  }, 2000);
+                // Set Authorization header default
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-              } catch (error) {
-                  console.error('Login error:', error);
+                this.showSuccessModal('Login Berhasil!',
+                    `Selamat datang, ${user.full_name || user.username}! Anda berhasil masuk ke sistem DSS.`);
 
-                  let errorMessage = 'Terjadi kesalahan saat login';
-                  if (error.response?.status === 401) {
-                      errorMessage = 'Email atau password salah';
-                  } else if (error.response?.status === 404) {
-                      errorMessage = 'Akun tidak ditemukan';
-                  } else if (error.response?.data?.detail) {
-                      errorMessage = error.response.data.detail;
-                  }
+                this.loginForm = {
+                    email: '',
+                    password: '',
+                    rememberMe: false
+                };
 
-                  this.showErrorModal('Login Gagal', errorMessage);
-              } finally {
-                  this.loading = false;
-              }
-          },
+                setTimeout(() => {
+                    window.location.href = '/yayasan_bambu_dss/template/user/index.html';
+                }, 2000);
 
-          async handleRegister() {
-              if (!this.validateRegister()) return;
+            } catch (error) {
+                console.error('Login error:', error);
 
-              this.loading = true;
-              this.loadingText = 'Membuat akun baru...';
+                let errorMessage = 'Terjadi kesalahan saat login';
+                if (error.response?.status === 401) {
+                    errorMessage = 'Email atau password salah';
+                } else if (error.response?.status === 404) {
+                    errorMessage = 'Akun tidak ditemukan';
+                } else if (error.response?.data?.detail) {
+                    errorMessage = error.response.data.detail;
+                }
 
-              try {
-                  const response = await axios.post(`${API_BASE_URL}users/`, { // Changed here
-                      username: this.registerForm.username,
-                      email: this.registerForm.email,
-                      full_name: this.registerForm.full_name || null,
-                      role: this.registerForm.role,
-                      password: this.registerForm.password,
-                      is_active: true
-                  });
+                this.showErrorModal('Login Gagal', errorMessage);
+            } finally {
+                this.loading = false;
+            }
+        },
 
-                  this.showSuccessModal('Registrasi Berhasil!',
-                      `Selamat ${response.data.full_name || response.data.username}! Akun Anda telah berhasil dibuat. Silakan login untuk mengakses sistem DSS.`);
+        async handleRegister() {
+            if (!this.validateRegister()) return;
 
-                  // Reset form
-                  this.registerForm = {
-                      username: '',
-                      email: '',
-                      full_name: '',
-                      role: 'decision maker',
-                      password: '',
-                      agreeToTerms: false
-                  };
+            this.loading = true;
+            this.loadingText = 'Membuat akun baru...';
 
-                  // Pindah ke tab login setelah 2 detik
-                  setTimeout(() => {
-                      this.activeTab = 'login';
-                  }, 2000);
+            try {
+                const response = await axios.post(`${API_BASE_URL}users/`, {
+                    username: this.registerForm.username,
+                    email: this.registerForm.email,
+                    full_name: this.registerForm.full_name || null,
+                    role: this.registerForm.role,
+                    password: this.registerForm.password,
+                    is_active: true
+                });
 
-              } catch (error) {
-                  console.error('Registration error:', error);
+                this.showSuccessModal('Registrasi Berhasil!',
+                    `Selamat ${response.data.full_name || response.data.username}! Akun Anda telah berhasil dibuat. Silakan login untuk mengakses sistem DSS.`);
 
-                  let errorMessage = 'Terjadi kesalahan saat membuat akun';
-                  if (error.response?.status === 400) {
-                      errorMessage = 'Data yang dimasukkan tidak valid atau email sudah terdaftar';
-                  } else if (error.response?.data?.detail) {
-                      errorMessage = error.response.data.detail;
-                  }
+                this.registerForm = {
+                    username: '',
+                    email: '',
+                    full_name: '',
+                    role: 'decision maker',
+                    password: '',
+                    agreeToTerms: false
+                };
 
-                  this.showErrorModal('Registrasi Gagal', errorMessage);
-              } finally {
-                  this.loading = false;
-              }
-          },
+                setTimeout(() => {
+                    this.activeTab = 'login';
+                }, 2000);
 
-          showSuccessModal(title, message) {
-              this.modalType = 'success';
-              this.modalTitle = title;
-              this.modalMessage = message;
-              this.showModal = true;
-          },
+            } catch (error) {
+                console.error('Registration error:', error);
 
-          showErrorModal(title, message) {
-              this.modalType = 'error';
-              this.modalTitle = title;
-              this.modalMessage = message;
-              this.showModal = true;
-          },
+                let errorMessage = 'Terjadi kesalahan saat membuat akun';
+                if (error.response?.status === 400) {
+                    errorMessage = 'Data yang dimasukkan tidak valid atau email sudah terdaftar';
+                } else if (error.response?.data?.detail) {
+                    errorMessage = error.response.data.detail;
+                }
 
-          closeModal() {
-              this.showModal = false;
-          },
-      },
+                this.showErrorModal('Registrasi Gagal', errorMessage);
+            } finally {
+                this.loading = false;
+            }
+        },
 
+        showSuccessModal(title, message) {
+            this.modalType = 'success';
+            this.modalTitle = title;
+            this.modalMessage = message;
+            this.showModal = true;
+        },
 
-      mounted() {
-          // Check if user is already logged in
-          const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
-          if (userData) {
-              try {
-                  const user = JSON.parse(userData);
-                  console.log('User already logged in:', user);
-              } catch (error) {
-                  console.error('Error parsing stored user data:', error);
-                  localStorage.removeItem('userData');
-                  sessionStorage.removeItem('userData');
-              }
-          }
+        showErrorModal(title, message) {
+            this.modalType = 'error';
+            this.modalTitle = title;
+            this.modalMessage = message;
+            this.showModal = true;
+        },
 
-          // Add keyboard event listeners for better UX
-          document.addEventListener('keydown', (e) => {
-              if (e.key === 'Enter' && !this.loading) {
-                  if (this.activeTab === 'login') {
-                      this.handleLogin();
-                  } else {
-                      this.handleRegister();
-                  }
-              }
-          });
-      }
-  }).mount('#app');
+        closeModal() {
+            this.showModal = false;
+        },
+
+        logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('userData');
+            sessionStorage.removeItem('access_token');
+            sessionStorage.removeItem('userData');
+            window.location.href = '/login.html'; // atau halaman login kamu
+        }
+    },
+
+    mounted() {
+        const accessToken = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+        const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
+
+        if (accessToken) {
+            axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                console.log('User sudah login:', user);
+            } catch (error) {
+                console.error('Gagal parse userData:', error);
+                localStorage.removeItem('userData');
+                sessionStorage.removeItem('userData');
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !this.loading) {
+                if (this.activeTab === 'login') {
+                    this.handleLogin();
+                } else {
+                    this.handleRegister();
+                }
+            }
+        });
+    }
+}).mount('#app');

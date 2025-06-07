@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from passlib.context import CryptContext
 from models.admin import Admin
 from schemas.admin_schema import AdminLogin
+from utils.jwt_generate import create_access_token
 
 # Inisialisasi context untuk hashing dan verifikasi password
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -25,11 +26,11 @@ def get_admin_by_username(db: Session, username: str):
 def login_admin(db: Session, admin_data: AdminLogin):
     admin = db.query(Admin).filter(Admin.username == admin_data.username).first()
 
-    if not admin:
+    if not admin or not verify_password(admin_data.password, admin.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Verifikasi password menggunakan password_hash
-    if not verify_password(admin_data.password, admin.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    token_data = {"sub": admin.username, "admin_id": admin.admin_id}
+    access_token = create_access_token(data=token_data)
 
-    return admin
+    return {"access_token": access_token, "admin": admin}
+

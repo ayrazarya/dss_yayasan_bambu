@@ -10,6 +10,15 @@ class AdminBase(BaseModel):
     is_active: Optional[bool] = True
 
 
+class AdminResponse(AdminBase):
+    admin_id: int
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+
+    class Config:
+        orm_mode = True
+
+
 class AdminCreate(AdminBase):
     password: str
 
@@ -19,10 +28,7 @@ class AdminLogin(BaseModel):
     password: str
 
 
-class AdminResponse(AdminBase):
-    admin_id: int
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
-
-    class Config:
-        orm_mode = True
+class AdminLoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    admin: AdminResponse

@@ -38,17 +38,17 @@
                             }
                         });
 
-                        if (response.data) {
-                            this.successMessage = `Welcome back, ${response.data.username}!`;
+                       if (response.data && response.data.access_token) {
+                            this.successMessage = `Welcome back, ${response.data.admin.username}!`;
 
-                            // Store admin data in localStorage
-                            localStorage.setItem('adminData', JSON.stringify(response.data));
+                            localStorage.setItem('adminToken', response.data.access_token);
+                            localStorage.setItem('adminData', JSON.stringify(response.data.admin));
 
-                            // Redirect to dashboard after 2 seconds
                             setTimeout(() => {
                                 window.location.href = '/yayasan_bambu_dss/template/admin/dashboard.html';
                             }, 2000);
                         }
+
                     } catch (error) {
                         if (error.response) {
                             this.errorMessage = error.response.data.detail || 'Login failed';
