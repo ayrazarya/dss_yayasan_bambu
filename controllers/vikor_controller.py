@@ -8,36 +8,47 @@ class VikorController:
         self.db = db
 
     def _calculate_sales_score(self, product):
-        return sum(txn.quantity for mp in product.marketed_products for txn in mp.transactions) #Ini ngakses produk yang udah dirilis lewat calon produk baru??
+        try:
+            return sum(txn.quantity for mp in product.marketed_products for txn in mp.transactions)
+        except Exception:
+            return 0.0
 
     def _calculate_survey_score(self, product: Product):
-        if not product.surveys:  # surveys should be the relationship to MarketSurvey
+        try:
+            all_ratings = []
+            for survey in product.surveys:
+                ratings = [response.rating for response in survey.responses if response.rating is not None]
+                all_ratings.extend(ratings)
+            return sum(all_ratings) / len(all_ratings) if all_ratings else 0.0
+        except Exception:
             return 0.0
-        
-        all_ratings = []
-        for survey in product.surveys:
-            # Get all non-None ratings from survey responses
-            survey_ratings = [response.rating for response in survey.responses 
-                            if response.rating is not None]
-            all_ratings.extend(survey_ratings)
-        return sum(all_ratings) / len(all_ratings) if all_ratings else 0.0
 
     def calculate_rankings(self):
         products = self.db.query(Product).all()
 
         data = []
         for p in products:
-            data.append({
-                "name": p.name,
-                "product_id": p.product_id,
-                "C1": float(p.development_cost),
-                "C2": float(p.production_cost_per_unit),
-                "C3": self._calculate_sales_score(p),
-                "C4": self._calculate_survey_score(p),
-            })
+            try:
+                sales_score = self._calculate_sales_score(p)
+                survey_score = self._calculate_survey_score(p)
 
-        vikor = VikorHelper(data)  # Tidak perlu input weights & types
+                data.append({
+                    "name": p.name,
+                    "product_id": p.product_id,
+                    "C1": float(p.development_cost),
+                    "C2": float(p.production_cost_per_unit),
+                    "C3": sales_score,
+                    "C4": survey_score,
+                })
+            except Exception as e:
+                raise Exception(f"Gagal memproses produk {p.name}: {str(e)}")
+
+        if not data:
+            raise Exception("Tidak ada data produk untuk dihitung")
+
+        vikor = VikorHelper(data)
         result = vikor.calculate()
+
 
         self.db.query(ProductRanking).delete()
         self.db.commit()
