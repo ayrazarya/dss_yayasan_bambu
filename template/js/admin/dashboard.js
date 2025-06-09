@@ -13,6 +13,7 @@ createApp({
                 production_cost_per_unit: null,
                 status: '',
                 survey_form_id: ''
+
             },
             editingProduct: null,
             editProduct: {
@@ -22,6 +23,15 @@ createApp({
                 production_cost_per_unit: null,
                 status: '',
                 survey_form_id: ''
+            },
+            surveyStatus: {
+              message: '',
+              valid: null  // true / false / null
+            },
+            modal: {
+              show: false,
+              title: "",
+              message: ""
             },
             costChart: null,
             statusChart: null,
@@ -220,6 +230,35 @@ createApp({
             }
         },
 
+        async checkSurveyId() {
+              try {
+                const response = await axios.get(
+                  `${API_BASE_URL}products/api/survey/check-id/${this.newProduct.survey_form_id}`
+                );
+
+                if (response.data.valid) {
+                  this.modal = {
+                    show: true,
+                    title: "ID Valid",
+                    message: "Survey form ID yang kamu masukkan valid dan bisa digunakan."
+                  };
+                } else {
+                  this.modal = {
+                    show: true,
+                    title: "ID Tidak Valid",
+                    message: "ID tidak valid. Silakan periksa kembali ID Google Sheet yang kamu masukkan dan pastikan sudah dibagikan ke service account."
+                  };
+                }
+              } catch (error) {
+                console.error("Terjadi error saat mengecek ID:", error);
+                this.modal = {
+                  show: true,
+                  title: "Gagal Mengecek ID",
+                  message: "Terjadi kesalahan saat mengecek ID Google Sheet yang kamu masukkan dan pastikan sudah dibagikan ke service account."
+                };
+              }
+            },
+
         showNotification(message, type = 'info') {
             // Simple notification - you can enhance this with a proper notification system
             const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
@@ -228,7 +267,7 @@ createApp({
             // For now, using alert - replace with a proper notification system
             if (type === 'success') {
                 // You can implement a toast notification here
-                console.log('✅ ' + message);
+                console.log('success' + message);
             }
         },
 

@@ -327,7 +327,7 @@
                                                placeholder="0.00" />
                                     </div>
                                 </div>
-                              <div>
+                                <div>
                               <label class="block text-sm font-medium text-gray-700 mb-1">Survey form ID</label>
                               <div class="flex gap-2 items-center">
                                 <input
@@ -358,7 +358,26 @@
                 </div>
             </main>
         </div>
+
+        <!-- MODAL -->
+        <div
+          v-if="modal.show"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+        >
+          <div class="bg-white rounded-xl shadow-lg p-6 max-w-md w-full text-center">
+            <h2 class="text-lg font-semibold mb-4">{{ modal.title }}</h2>
+            <p class="text-gray-700 mb-6">{{ modal.message }}</p>
+            <button
+              class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
+              @click="modal.show = false"
+            >
+              Tutup
+            </button>
+          </div>
+
+        </div>
     </div>
+
 
 <script type="module" src="../js/admin/dashboard.js"></script>
 

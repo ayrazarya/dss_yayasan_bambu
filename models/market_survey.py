@@ -12,4 +12,5 @@ class MarketSurvey(Base):
     form_response_id: Mapped[str] = mapped_column(Text)
 
     product: Mapped['Product'] = relationship('Product', back_populates='surveys')
-    responses: Mapped[List['SurveyResponse']] = relationship('SurveyResponse', back_populates='survey')
+    responses: Mapped[List[
+        'SurveyResponse']] = relationship('SurveyResponse', back_populates='survey')
