@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from typing import List
 from sqlalchemy.orm import Session
 
-from schemas.product_schema import ProductSchema, ProductCreateSchema
+from schemas.product_schema import ProductSchema, ProductCreateSchema, ProductUpdateSchema
 from controllers import product_controller
 from utils.database import get_db
 
@@ -21,7 +21,7 @@ def create(product: ProductCreateSchema, db: Session = Depends(get_db)):  # <-- 
     return product_controller.create_product(product, db)
 
 @router.put("/{product_id}", response_model=ProductSchema)
-def update(product_id: int, product: ProductSchema, db: Session = Depends(get_db)):
+def update(product_id: int, product: ProductUpdateSchema, db: Session = Depends(get_db)):
     return product_controller.update_product(product_id, product, db)
 
 @router.delete("/{product_id}")

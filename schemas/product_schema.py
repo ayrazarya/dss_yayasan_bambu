@@ -19,6 +19,20 @@ class ProductCreateSchema(BaseModel):
 
 
 
+class ProductUpdateSchema(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    development_cost: Optional[float] = None
+    production_cost_per_unit: Optional[float] = None
+    status: Optional[str] = None
+
+    @validator("status")
+    def validate_status(cls, v):
+        allowed = {"calon", "disetujui", "ditolak"}
+        if v is not None and v.lower() not in allowed:
+            raise ValueError(f"status must be one of {allowed}")
+        return v.lower() if v else v
+
 
 class ProductSchema(ProductCreateSchema):
     product_id: int

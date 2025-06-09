@@ -11,7 +11,17 @@ createApp({
                 name: '',
                 development_cost: null,
                 production_cost_per_unit: null,
-                status: ''
+                status: '',
+                survey_form_id: ''
+            },
+            editingProduct: null,
+            editProduct: {
+                product_id: null,
+                name: '',
+                development_cost: null,
+                production_cost_per_unit: null,
+                status: '',
+                survey_form_id: ''
             },
             costChart: null,
             statusChart: null,
@@ -85,9 +95,8 @@ createApp({
         },
         async fetchProducts() {
             try {
-                const res = await fetch(`${API_BASE_URL}products/`);
-                if (!res.ok) throw new Error('Failed to fetch products');
-                this.products = await res.json();
+                const response = await axios.get(`${API_BASE_URL}products/`);
+                this.products = response.data;
 
                 // Initialize charts after data is loaded
                 this.$nextTick(() => {
@@ -97,7 +106,8 @@ createApp({
                 });
             } catch (error) {
                 console.error('Error fetching products:', error);
-                alert(error.message);
+                const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch products';
+                alert(errorMessage);
             }
         },
 
@@ -111,15 +121,11 @@ createApp({
                     description: null
                 };
 
-                const res = await fetch(`${API_BASE_URL}products/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                const response = await axios.post(`${API_BASE_URL}products/`, payload, {
+                    headers: { 'Content-Type': 'application/json' }
                 });
 
-                if (!res.ok) throw new Error('Failed to add product');
-
-                const createdProduct = await res.json();
+                const createdProduct = response.data;
                 this.products.push(createdProduct);
 
                 // Reset form
@@ -133,7 +139,66 @@ createApp({
 
             } catch (error) {
                 console.error('Error adding product:', error);
-                alert(error.message);
+                const errorMessage = error.response?.data?.message || error.message || 'Failed to add product';
+                alert(errorMessage);
+            }
+        },
+
+        // New edit methods
+        startEdit(product) {
+            this.editingProduct = product.product_id;
+            this.editProduct = {
+                product_id: product.product_id,
+                name: product.name,
+                development_cost: product.development_cost,
+                production_cost_per_unit: product.production_cost_per_unit,
+                status: product.status || ''
+            };
+        },
+
+        cancelEdit() {
+            this.editingProduct = null;
+            this.editProduct = {
+                product_id: null,
+                name: '',
+                development_cost: null,
+                production_cost_per_unit: null,
+                status: ''
+            };
+        },
+
+        async saveEdit() {
+            try {
+                const payload = {
+                    name: this.editProduct.name,
+                    development_cost: parseFloat(this.editProduct.development_cost),
+                    production_cost_per_unit: parseFloat(this.editProduct.production_cost_per_unit),
+                    status: this.editProduct.status || null,
+                    description: null
+                };
+
+                const response = await axios.put(`${API_BASE_URL}products/${this.editProduct.product_id}`, payload, {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const updatedProduct = response.data;
+
+                // Update the product in the local array
+                const index = this.products.findIndex(p => p.product_id === this.editProduct.product_id);
+                if (index !== -1) {
+                    this.products[index] = updatedProduct;
+                }
+
+                // Reset edit state
+                this.cancelEdit();
+
+                // Show success message
+                this.showNotification('Product updated successfully!', 'success');
+
+            } catch (error) {
+                console.error('Error updating product:', error);
+                const errorMessage = error.response?.data?.message || error.message || 'Failed to update product';
+                alert(errorMessage);
             }
         },
 
@@ -141,11 +206,7 @@ createApp({
             if (!confirm('Are you sure you want to delete this product?')) return;
 
             try {
-                const res = await fetch(`${API_BASE_URL}products/${productId}`, {
-                    method: 'DELETE'
-                });
-
-                if (!res.ok) throw new Error('Failed to delete product');
+                await axios.delete(`${API_BASE_URL}products/${productId}`);
 
                 this.products = this.products.filter(p => p.product_id !== productId);
 
@@ -154,7 +215,8 @@ createApp({
 
             } catch (error) {
                 console.error('Error deleting product:', error);
-                alert(error.message);
+                const errorMessage = error.response?.data?.message || error.message || 'Failed to delete product';
+                alert(errorMessage);
             }
         },
 
