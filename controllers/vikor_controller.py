@@ -3,6 +3,7 @@ from models import Product, ProductRanking
 from utils.vikor_helper import VikorHelper
 from datetime import datetime
 
+
 class VikorController:
     def __init__(self, db: Session):
         self.db = db
@@ -49,17 +50,53 @@ class VikorController:
         vikor = VikorHelper(data)
         result = vikor.calculate()
 
-
-        self.db.query(ProductRanking).delete()
-        self.db.commit()
+        calculation_time = datetime.now()
 
         for i, r in enumerate(result):
             self.db.add(ProductRanking(
                 product_id=r['product_id'],
                 score=r['Q'],
                 rank=i + 1,
-                evaluated_at=datetime.now()
+                evaluated_at=calculation_time  # Menggunakan waktu yang sama untuk satu batch perhitungan
             ))
 
         self.db.commit()
         return result
+
+    def get_latest_rankings(self):
+        """Mendapatkan ranking terbaru berdasarkan evaluated_at"""
+        latest_evaluation = self.db.query(ProductRanking.evaluated_at).order_by(
+            ProductRanking.evaluated_at.desc()).first()
+
+        if not latest_evaluation:
+            return []
+
+        latest_time = latest_evaluation[0]
+        rankings = (self.db.query(ProductRanking)
+                    .join(Product)
+                    .filter(ProductRanking.evaluated_at == latest_time)
+                    .order_by(ProductRanking.rank)
+                    .all())
+
+        return rankings
+
+    def get_rankings_history(self, limit: int = None):
+        """Mendapatkan history semua perhitungan ranking"""
+        query = (self.db.query(ProductRanking)
+                 .join(Product)
+                 .order_by(ProductRanking.evaluated_at.desc(), ProductRanking.rank))
+
+        if limit:
+            query = query.limit(limit)
+
+        return query.all()
+
+    def get_rankings_by_date(self, evaluation_date: datetime):
+        """Mendapatkan ranking berdasarkan tanggal evaluasi tertentu"""
+        rankings = (self.db.query(ProductRanking)
+                    .join(Product)
+                    .filter(ProductRanking.evaluated_at == evaluation_date)
+                    .order_by(ProductRanking.rank)
+                    .all())
+
+        return rankings
