@@ -1,14 +1,14 @@
 # ============ ROUTER FILE ============
 
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from utils.database import get_db
 from models import Product, ProductRanking
 from schemas.product_ranking_schema import ProductRankingSchema
-import controllers.vikor_controller as favorit_controller
+import controllers.vikor_controller as vikor_controller
 import controllers.survey_controller as secondary_controller
 
 router = APIRouter()
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.post("/calculate")
 def calculate_vikor(db: Session = Depends(get_db)):
     try:
-        controller = favorit_controller.VikorController(db)
+        controller = vikor_controller.VikorController(db)
         secondary_controller.update_surveys_response_from_sheet(controller.db)
         results = controller.calculate_rankings()
         return {"message": "VIKOR rankings calculated successfully", "data": results}
@@ -30,7 +30,7 @@ def calculate_vikor(db: Session = Depends(get_db)):
 @router.get("/rankings", response_model=List[ProductRankingSchema])
 def get_rankings(db: Session = Depends(get_db)):
     """Mendapatkan ranking terbaru"""
-    controller = favorit_controller.VikorController(db)
+    controller = vikor_controller.VikorController(db)
     rankings = controller.get_latest_rankings()
 
     result = []
@@ -51,7 +51,7 @@ def get_rankings_history(
         db: Session = Depends(get_db)
 ):
     """Mendapatkan history semua perhitungan ranking"""
-    controller = favorit_controller.VikorController(db)
+    controller = vikor_controller.VikorController(db)
     rankings = controller.get_rankings_history(limit=limit)
 
     result = []
@@ -83,7 +83,7 @@ def get_rankings_by_date(
         db: Session = Depends(get_db)
 ):
     """Mendapatkan ranking berdasarkan tanggal evaluasi tertentu"""
-    controller = favorit_controller.VikorController(db)
+    controller = vikor_controller.VikorController(db)
     rankings = controller.get_rankings_by_date(evaluation_date)
 
     if not rankings:
@@ -99,3 +99,16 @@ def get_rankings_by_date(
             "name": r.product.name if r.product else None
         })
     return result
+
+@router.delete("/rankings/{evaluation_date}")
+def delete_ranking(evaluation_date: date, db: Session = Depends(get_db)):
+    controller = vikor_controller.VikorController(db)
+
+    try:
+        result = controller.delete_ranking(evaluation_date)
+        if result.get("message"):
+            return {"success": True, "detail": result["message"]}
+        else:
+            return {"success": False, "detail": "Tidak ada ranking yang dihapus"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

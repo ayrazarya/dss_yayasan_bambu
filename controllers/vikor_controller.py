@@ -112,3 +112,14 @@ class VikorController:
                     .all())
 
         return rankings
+
+    def delete_ranking(self, evaluation_date: date):
+        try:
+            deleted_rows = (self.db.query(ProductRanking)
+                            .filter(func.date(ProductRanking.evaluated_at) == evaluation_date)
+                            .delete(synchronize_session=False))
+            self.db.commit()
+            return {"message": f"{deleted_rows} ranking berhasil dihapus"}
+        except Exception as e:
+            self.db.rollback()
+            raise Exception(f"Gagal menghapus ranking: {str(e)}")

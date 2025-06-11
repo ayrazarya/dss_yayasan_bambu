@@ -16,7 +16,8 @@ const { createApp } = Vue;
         alertMessage: '',
         alertType: 'success',
         lastUpdated: null,
-        // Properti apiBaseUrl dihapus dari data
+        showDeleteModal: false,
+        dateToDelete: null,
       };
     },
     methods: {
@@ -74,6 +75,51 @@ const { createApp } = Vue;
           console.error('Error fetching history:', error);
         }
       },
+       promptDelete() {
+        if (!this.selectedDate) {
+          this.showAlert('Silakan pilih tanggal evaluasi yang ingin dihapus terlebih dahulu.', 'error');
+          return;
+        }
+        this.dateToDelete = this.selectedDate;
+        this.showDeleteModal = true;
+      },
+
+      // [TAMBAHAN] Membatalkan proses hapus
+      cancelDelete() {
+        this.showDeleteModal = false;
+        this.dateToDelete = null;
+      },
+
+     async deleteRanking() {
+  if (!this.dateToDelete) return;
+  this.isLoading = true;
+  this.showDeleteModal = false;
+
+  try {
+    // Pastikan hanya mengirim tanggal (tanpa waktu)
+    const formattedDate = new Date(this.dateToDelete).toISOString().split('T')[0];
+
+    const response = await axios.delete(`${API_BASE_URL}vikor/rankings/${formattedDate}`);
+
+    this.showAlert(response.data.detail || 'Data peringkat berhasil dihapus.', 'success');
+
+    this.dateToDelete = null;
+    this.selectedDate = '';
+    await this.fetchRankings();
+    await this.fetchEvaluationDates();
+    if (this.showHistory) {
+      await this.fetchHistory();
+    }
+
+  } catch (error) {
+    console.error('Error deleting ranking:', error);
+    this.showAlert('Gagal menghapus data peringkat: ' + (error.response?.data?.detail || error.message), 'error');
+  } finally {
+    this.isLoading = false;
+  }
+},
+
+
       async refreshData() {
         this.selectedDate = '';
         await this.fetchRankings();
