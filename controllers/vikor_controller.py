@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
 from models import Product, ProductRanking
 from utils.vikor_helper import VikorHelper
-from datetime import datetime
+from datetime import datetime, date
+from sqlalchemy import func
 
 
 class VikorController:
@@ -53,12 +54,23 @@ class VikorController:
         calculation_time = datetime.now()
 
         for i, r in enumerate(result):
-            self.db.add(ProductRanking(
-                product_id=r['product_id'],
-                score=r['Q'],
-                rank=i + 1,
-                evaluated_at=calculation_time  # Menggunakan waktu yang sama untuk satu batch perhitungan
-            ))
+            # Supabase/PostgreSQL: bandingkan hanya tanggalnya
+            existing_ranking = self.db.query(ProductRanking).filter(
+                ProductRanking.product_id == r['product_id'],
+                func.date(ProductRanking.evaluated_at) == date.today()
+            ).first()
+
+            if existing_ranking:
+                existing_ranking.score = r['Q']
+                existing_ranking.rank = i + 1
+                existing_ranking.evaluated_at = calculation_time
+            else:
+                self.db.add(ProductRanking(
+                    product_id=r['product_id'],
+                    score=r['Q'],
+                    rank=i + 1,
+                    evaluated_at=calculation_time
+                ))
 
         self.db.commit()
         return result
