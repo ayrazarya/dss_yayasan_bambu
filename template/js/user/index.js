@@ -13,6 +13,7 @@ createApp({
             }
         });
 
+
         // Interceptors untuk request
         axiosInstance.interceptors.request.use(
             (config) => {
@@ -109,8 +110,7 @@ createApp({
             localStorage.removeItem('userData');
             sessionStorage.removeItem('userData');
             user.value = { username: '', email: '', role: '', is_active: false, full_name: '' };
-            alert('Pengguna keluar (simulasi).');
-            // window.location.href = '/login.html'; // Arahkan ke halaman login jika ada
+            window.location.href = '/yayasan_bambu_dss/template/user/user_login_register.html'; // Arahkan ke halaman login jika ada
         };
 
         const _fetchData = async (endpoint, options = {}) => {
@@ -253,6 +253,8 @@ createApp({
             }
         };
 
+
+
         const fetchExistingRankings = async () => {
             console.log('Mengambil peringkat VIKOR yang ada...');
             try {
@@ -325,7 +327,15 @@ createApp({
             // Anda bisa juga mengekspos apiBaseUrl ke template jika perlu, tapi biasanya tidak
             // apiBaseUrl
         };
-    }
+    },
+
+      logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('adminData');
+                window.location.href = '/yayasan_bambu_dss/template/admin/admin_login_register.html';
+            }
+        },
+
 }).mount('#app');
 
 // Tailwind config
