@@ -110,7 +110,7 @@ createApp({
             localStorage.removeItem('userData');
             sessionStorage.removeItem('userData');
             user.value = { username: '', email: '', role: '', is_active: false, full_name: '' };
-            window.location.href = '/yayasan_bambu_dss/template/user/user_login_register.html'; // Arahkan ke halaman login jika ada
+            window.location.href = '/template/user/user_login_register.html'; // Arahkan ke halaman login jika ada
         };
 
         const _fetchData = async (endpoint, options = {}) => {
@@ -332,7 +332,7 @@ createApp({
       logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('adminData');
-                window.location.href = '/yayasan_bambu_dss/template/admin/admin_login_register.html';
+                window.location.href = '/template/admin/admin_login_register.html';
             }
         },
 
