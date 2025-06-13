@@ -258,7 +258,7 @@ createApp({
 
                 // Redirect ke halaman utama
                 setTimeout(() => {
-                    window.location.href = '/yayasan_bambu_dss/template/user/index.html';
+                    window.location.href = '/template/user/index.html';
                 }, 2000);
 
             } catch (error) {
@@ -331,7 +331,7 @@ createApp({
 
         logout() {
             this.clearStoredAuth();
-            window.location.href = '/yayasan_bambu_dss/template/user/user_login_register.html'; // atau halaman login kamu
+            window.location.href = '/template/user/user_login_register.html'; // atau halaman login kamu
         },
 
         // Method untuk cek status login

@@ -1,4 +1,4 @@
-import jwt  # bukan import pyjwt
+import jwt
 from datetime import datetime, timedelta
 import os
 

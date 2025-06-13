@@ -70,7 +70,7 @@ createApp({
 
                     // Redirect ke dashboard setelah 2 detik
                     setTimeout(() => {
-                        window.location.href = '/yayasan_bambu_dss/template/admin/dashboard.html';
+                        window.location.href = '/template/admin/dashboard.html';
                     }, 2000);
                 } else {
                     throw new Error('Invalid response format');
