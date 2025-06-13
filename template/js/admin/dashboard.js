@@ -80,7 +80,7 @@ createApp({
             this.admin = JSON.parse(adminData);
             this.fetchProducts();
         } else {
-            window.location.href = '/yayasan_bambu_dss/template/admin/admin_login_register.html';
+            window.location.href = '/template/admin/admin_login_register.html';
         }
     },
     methods: {
@@ -100,7 +100,7 @@ createApp({
         logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('adminData');
-                window.location.href = '/yayasan_bambu_dss/template/admin/admin_login_register.html';
+                window.location.href = '/template/admin/admin_login_register.html';
             }
         },
         async fetchProducts() {
@@ -128,9 +128,9 @@ createApp({
                     development_cost: parseFloat(this.newProduct.development_cost),
                     production_cost_per_unit: parseFloat(this.newProduct.production_cost_per_unit),
                     status: this.newProduct.status || null,
-                    description: null
+                    description: null,
+                    form_response_id: this.newProduct.survey_form_id || null
                 };
-
                 const response = await axios.post(`${API_BASE_URL}products/`, payload, {
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -145,7 +145,7 @@ createApp({
                 this.newProduct.status = '';
 
                 // Show success message
-                this.showNotification('Product added successfully!', 'success');
+                this.showNotification('Product added successfully!', 'success: ');
 
             } catch (error) {
                 console.error('Error adding product:', error);

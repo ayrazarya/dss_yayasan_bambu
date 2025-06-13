@@ -135,7 +135,7 @@ const { createApp } = Vue;
 
       logout() {
         localStorage.removeItem('adminData');
-        window.location.href = '/yayasan_bambu_dss/template/admin/admin_login_register.html';
+        window.location.href = '/template/admin/admin_login_register.html';
       }
     },
     async mounted() {
@@ -143,7 +143,7 @@ const { createApp } = Vue;
       if (adminData) {
         this.admin = JSON.parse(adminData);
       } else {
-        window.location.href = '/yayasan_bambu_dss/template/admin/admin_login_register.html';
+        window.location.href = '/template/admin/admin_login_register.html';
         return;
       }
       await this.fetchRankings();

@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from controllers.survey_controller import create_market_survey
 from models.product import Product
+from schemas.market_surveys_schema import MarketSurveyCreate
 from schemas.product_schema import ProductSchema, ProductCreateSchema, ProductUpdateSchema
 from datetime import datetime
 
@@ -29,6 +31,13 @@ def create_product(product: ProductCreateSchema, db: Session):  # gunakan tipe i
     db.add(new_product)
     db.commit()
     db.refresh(new_product)
+
+    if product.form_response_id:
+        survey_data = MarketSurveyCreate(
+            product_id=new_product.product_id,
+            form_response_id=product.form_response_id
+        )
+        create_market_survey(db, survey_data)
     return new_product
 
 def update_product(product_id: int, product: ProductUpdateSchema, db: Session):

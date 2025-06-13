@@ -9,6 +9,7 @@ class ProductCreateSchema(BaseModel):
     development_cost: float
     production_cost_per_unit: float
     status: Optional[str] = None
+    form_response_id: Optional[str] = None 
 
     @validator("status")
     def validate_status(cls, v):

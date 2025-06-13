@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # MarketSurvey Logic
 def create_market_survey(db: Session, survey: MarketSurveyCreate) -> MarketSurvey:
-    db_survey = MarketSurvey(**survey.model_dump())
+    db_survey = MarketSurvey(product_id = survey.product_id, form_response_id = survey.form_response_id)
     db.add(db_survey)
     db.commit()
     db.refresh(db_survey)
