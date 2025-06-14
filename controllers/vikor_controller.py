@@ -31,15 +31,12 @@ class VikorController:
         data = []
         for p in products:
             try:
-                sales_score = self._calculate_sales_score(p)
                 survey_score = self._calculate_survey_score(p)
-
                 data.append({
                     "name": p.name,
                     "product_id": p.product_id,
                     "C1": float(p.development_cost),
                     "C2": float(p.production_cost_per_unit),
-                    "C3": sales_score,
                     "C4": survey_score,
                 })
             except Exception as e:

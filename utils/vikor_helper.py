@@ -1,6 +1,6 @@
 class VikorHelper:
-    DEFAULT_WEIGHTS = [0.26666667, 0.26666667, 0.2, 0.26666667]
-    DEFAULT_CRITERIA_TYPES = ['cost', 'cost', 'cost', 'benefit']
+    DEFAULT_WEIGHTS = [1/3, 1/3, 1/3]
+    DEFAULT_CRITERIA_TYPES = ['cost', 'cost', 'benefit']
 
     def __init__(self, data, weights=None, criteria_types=None):
         self.data = data
