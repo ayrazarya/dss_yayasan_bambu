@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,45 +8,36 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
         body {
             font-family: 'Inter', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background-color: #F7F8FC; /* Lighter, slightly blueish gray */
+            background-color: #F7F8FC;
         }
-        .dropdown-menu { display: none; opacity: 0; transform: translateY(10px); transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
-        .dropdown:hover .dropdown-menu { display: block; opacity: 1; transform: translateY(0); }
         ::-webkit-scrollbar { width: 7px; height: 7px; }
         ::-webkit-scrollbar-track { background: #e9eaf0; }
         ::-webkit-scrollbar-thumb { background: #b8c0d0; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #9da7bb; }
-
         .table-loading-shimmer td > div, .chart-loading-shimmer > div, .criteria-loading-shimmer > div {
             background: linear-gradient(90deg, #eef0f5 25%, #e1e4eb 50%, #eef0f5 75%);
             background-size: 200% 100%;
             animation: shimmer 1.5s infinite linear;
-            border-radius: 8px; /* Disesuaikan dengan radius kartu kriteria */
+            border-radius: 8px;
         }
         .table-loading-shimmer td > div { height: 20px; border-radius: 4px;}
         .chart-loading-shimmer > div { height: 100%; width: 100%; }
-        .criteria-loading-shimmer > div { height: 90px; } /* Tinggi kira-kira kartu kriteria */
-
-
+        .criteria-loading-shimmer > div { height: 90px; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
         .card {
             background-color: white;
-            border-radius: 1rem; /* 16px */
-            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.12); /* Slightly enhanced shadow */
-            padding: 1.5rem; /* 24px */
+            border-radius: 1rem;
+            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.12);
+            padding: 1.5rem;
         }
         .btn-gradient {
              background-image: linear-gradient(to right, #22c55e 0%, #15803d 100%);
@@ -55,29 +47,29 @@
         }
         .btn-gradient:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 7px 20px rgba(22, 163, 74, 0.35); }
         .btn-outline {
-            background-color: transparent; color: #16a34a; border: 2px solid #16a34a;
+            background-color: transparent;
+            color: #16a34a; border: 2px solid #16a34a;
             font-weight: 600; padding: calc(0.875rem - 2px) calc(1.75rem - 2px) ;
-            border-radius: 0.75rem; transition: all 0.3s ease;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
         }
         .btn-outline:hover { background-color: #f0fdf4; transform: translateY(-2px); }
         .font-inter { font-family: 'Inter', sans-serif; }
-        .animation-delay-2000 { animation-delay: 2s; }
-
         .criterion-card {
             background-color: #FFFFFF;
-            border: 1px solid #E5E7EB; /* neutral-200 */
-            border-radius: 0.75rem; /* 12px */
-            padding: 1rem; /* 16px */
+            border: 1px solid #E5E7EB;
+            border-radius: 0.75rem;
+            padding: 1rem;
             transition: all 0.2s ease-in-out;
             box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-            display: flex; /* Added for better internal alignment */
-            flex-direction: column; /* Added for better internal alignment */
-            justify-content: space-between; /* Added for better internal alignment */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .criterion-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0,0,0,0.07);
-            border-color: #D1D5DB; /* neutral-300 */
+            border-color: #D1D5DB;
         }
     </style>
 </head>
@@ -99,79 +91,159 @@
 
         <main class="flex-1 overflow-auto p-5 md:p-8">
             <div class="max-w-screen-xl mx-auto">
-                <div class="mb-8 md:mb-10">
+                <div class="mb-8">
                      <h1 class="text-3xl sm:text-4xl font-bold text-neutral-800">Halo, <span class="text-bamboo-600">{{ user.full_name || user.username }}</span>!</h1>
-                     <p class="text-neutral-600 text-lg mt-1">Berikut adalah ringkasan dukungan keputusan Anda.</p>
+                     <p class="text-neutral-600 text-lg mt-1">Silakan jalankan analisis atau lihat kembali hasil keputusan Anda.</p>
                 </div>
 
-                <div v-if="!isDssLoading && topRecommendation"
-                     class="bg-gradient-to-br from-bamboo-600 to-bamboo-700 text-white p-6 md:p-8 rounded-2xl shadow-2xl mb-10 relative overflow-hidden">
-                    <div class="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-white/5 rounded-full opacity-60 animate-pulse-slow"></div>
-                    <div class="absolute -bottom-1/4 -left-1/4 w-1/3 h-1/3 bg-white/10 rounded-lg transform rotate-12 opacity-50 animate-pulse-slow animation-delay-2000"></div>
-                    <div class="relative z-10">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between mb-5">
-                            <div>
-                                <span class="inline-flex items-center px-4 py-1.5 bg-yellow-300 text-yellow-800 rounded-full text-sm font-bold mb-2 shadow-md">
-                                    <i class="fas fa-star mr-2"></i>Rekomendasi Teratas
-                                </span>
-                                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">{{ topRecommendation.name }}</h2>
-                                <p class="text-bamboo-200 text-sm">ID Produk: {{ topRecommendation.product_id }}</p>
-                            </div>
-                            <div class="mt-4 md:mt-0 text-left md:text-right">
-                                <p class="text-bamboo-100 text-sm font-medium">VIKOR Q-Value</p>
-                                <p class="text-5xl md:text-6xl font-bold text-white tabular-nums">{{ topRecommendation.Q }}</p>
-                            </div>
+                <div class="card mb-8 md:mb-10">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div class="mb-4 md:mb-0">
+                            <h3 class="text-xl font-semibold text-bamboo-700">Panel Tindakan</h3>
+                            <p class="text-neutral-500 text-sm">Jalankan analisis baru atau muat peringkat yang sudah ada.</p>
                         </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-5 border-t border-white/20">
-                            <div class="bg-white/10 p-4 rounded-lg hover:bg-white/20 transition-colors">
-                                <p class="text-xs text-bamboo-200 uppercase font-semibold tracking-wider">S-Value (Group Utility)</p>
-                                <p class="text-2xl font-bold text-white tabular-nums">{{ topRecommendation.S }}</p>
-                            </div>
-                            <div class="bg-white/10 p-4 rounded-lg hover:bg-white/20 transition-colors">
-                                <p class="text-xs text-bamboo-200 uppercase font-semibold tracking-wider">R-Value (Individual Regret)</p>
-                                <p class="text-2xl font-bold text-white tabular-nums">{{ topRecommendation.R }}</p>
-                            </div>
+                        <div class="flex flex-col sm:flex-row items-center gap-4">
+                            <button @click="startDSSCalculation" :disabled="isDssLoading" class="btn-gradient w-full sm:w-auto flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed">
+                                <i class="fas fa-calculator mr-2.5"></i>
+                                <span v-if="!isDssLoading">Jalankan Analisis Baru</span>
+                                <span v-else>Menghitung... <i class="fas fa-spinner fa-spin ml-2"></i></span>
+                            </button>
+                            <button @click="fetchExistingRankings" :disabled="isDssLoading" class="btn-outline w-full sm:w-auto flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed">
+                                <i class="fas fa-history mr-2.5"></i>
+                                <span v-if="!isDssLoading">Muat Peringkat Tersimpan</span>
+                                <span v-else>Memuat... <i class="fas fa-spinner fa-spin ml-2"></i></span>
+                            </button>
                         </div>
-                        <p class="text-xs text-bamboo-200 mt-5 text-center opacity-80">Nilai Q yang lebih rendah mengindikasikan alternatif yang lebih baik.</p>
-                    </div>
-                </div>
-                 <div v-else-if="isDssLoading && !dssResults.length" class="card p-6 md:p-8 mb-10 animate-pulse">
-                    <div class="h-8 bg-neutral-200 rounded w-1/3 mb-4"></div> <div class="h-12 bg-neutral-200 rounded w-3/4 mb-6"></div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><div class="bg-neutral-200 p-4 rounded-lg h-20"></div><div class="bg-neutral-200 p-4 rounded-lg h-20"></div></div>
-                </div>
-
-                <div v-if="dssResults.length > 0 || (isDssLoading && !dssResults.length)" class="mb-10 md:mb-12">
-                    <div class="card">
-                        <h3 class="text-xl md:text-2xl font-semibold text-bamboo-700 mb-1">Perbandingan Peringkat Produk (Q-Value)</h3>
-                        <p class="text-neutral-500 mb-5 text-sm">Visualisasi skor Q untuk setiap alternatif. Skor lebih rendah lebih baik.</p>
-                        <div v-if="isDssLoading && !dssResults.length" class="chart-loading-shimmer" style="height: 300px; width: 100%;"><div class="bg-neutral-200"></div></div>
-                        <div v-show="!isDssLoading && dssResults.length > 0" style="height: 300px; position: relative;">
-                            <canvas id="vikorRankChart"></canvas>
-                        </div>
-                         <p v-if="!isDssLoading && dssResults.length === 0 && !dssError" class="text-center text-neutral-500 py-10">
-                            Data tidak tersedia untuk menampilkan grafik.
-                        </p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-                    <div class="lg:col-span-2 card">
-                        <h3 class="text-xl md:text-2xl font-semibold text-bamboo-700 mb-1.5">Model Keputusan VIKOR</h3>
-                        <p class="text-neutral-500 mb-6">Analisis alternatif produk atau tinjau peringkat yang ada.</p>
 
-                        <div class="mb-8">
-                            <h4 class="text-lg font-semibold text-neutral-700 mb-4">Kriteria Evaluasi Digunakan:</h4>
-                            <div v-if="isDssLoading && dssCriteria.length === 0" class="grid grid-cols-1 sm:grid-cols-2 gap-4 criteria-loading-shimmer">
-                                <div v-for="n in 3" :key="`crit-load-${n}`"></div>
+                    <div class="lg:col-span-2 space-y-8">
+                        
+                        <div v-if="!isDssLoading && topRecommendation"
+                             class="bg-gradient-to-br from-bamboo-600 to-bamboo-700 text-white p-6 md:p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+                             <div class="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-white/5 rounded-full opacity-60 animate-pulse-slow"></div>
+                             <div class="absolute -bottom-1/4 -left-1/4 w-1/3 h-1/3 bg-white/10 rounded-lg transform rotate-12 opacity-50 animate-pulse-slow animation-delay-2000"></div>
+                             <div class="relative z-10">
+                                 <div class="flex flex-col md:flex-row md:items-center justify-between mb-5">
+                                     <div>
+                                         <span class="inline-flex items-center px-4 py-1.5 bg-yellow-300 text-yellow-800 rounded-full text-sm font-bold mb-2 shadow-md">
+                                             <i class="fas fa-star mr-2"></i>Rekomendasi Teratas
+                                         </span>
+                                         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">{{ topRecommendation.name }}</h2>
+                                     </div>
+                                     <div class="mt-4 md:mt-0 text-left md:text-right">
+                                         <p class="text-bamboo-100 text-sm font-medium">VIKOR Q-Value</p>
+                                         <p class="text-5xl md:text-6xl font-bold text-white tabular-nums">{{ topRecommendation.Q }}</p>
+                                     </div>
+                                 </div>
+                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-5 border-t border-white/20">
+                                     <div class="bg-white/10 p-4 rounded-lg hover:bg-white/20 transition-colors">
+                                         <p class="text-xs text-bamboo-200 uppercase font-semibold tracking-wider">S-Value (Group Utility)</p>
+                                         <p class="text-2xl font-bold text-white tabular-nums">{{ topRecommendation.S }}</p>
+                                     </div>
+                                     <div class="bg-white/10 p-4 rounded-lg hover:bg-white/20 transition-colors">
+                                         <p class="text-xs text-bamboo-200 uppercase font-semibold tracking-wider">R-Value (Individual Regret)</p>
+                                         <p class="text-2xl font-bold text-white tabular-nums">{{ topRecommendation.R }}</p>
+                                     </div>
+                                 </div>
+                                 <p class="text-xs text-bamboo-200 mt-5 text-center opacity-80">Nilai Q yang lebih rendah mengindikasikan alternatif yang lebih baik.</p>
+                             </div>
+                        </div>
+                        <div v-else-if="isDssLoading && !dssResults.length" class="card p-6 md:p-8 animate-pulse">
+                            <div class="h-8 bg-neutral-200 rounded w-1/3 mb-4"></div> <div class="h-12 bg-neutral-200 rounded w-3/4 mb-6"></div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"><div class="bg-neutral-200 p-4 rounded-lg h-20"></div><div class="bg-neutral-200 p-4 rounded-lg h-20"></div></div>
+                        </div>
+
+                        <div v-if="dssResults.length > 0 || (isDssLoading && !dssResults.length)" class="card">
+                            <h3 class="text-xl font-semibold text-bamboo-700 mb-1">Perbandingan Peringkat (Visual)</h3>
+                            <p class="text-neutral-500 mb-5 text-sm">Visualisasi skor Q untuk setiap alternatif. Skor lebih rendah lebih baik.</p>
+                            <div v-if="isDssLoading && !dssResults.length" class="chart-loading-shimmer" style="height: 300px; width: 100%;"><div class="bg-neutral-200"></div></div>
+                            <div v-show="!isDssLoading && dssResults.length > 0" style="height: 300px; position: relative;">
+                                <canvas id="vikorRankChart"></canvas>
                             </div>
-                            <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div v-for="criterion in dssCriteria" :key="criterion.id"
-                                     class="criterion-card">
+                            <p v-if="!isDssLoading && dssResults.length === 0 && !dssError" class="text-center text-neutral-500 py-10">
+                                Data tidak tersedia untuk menampilkan grafik. Jalankan analisis untuk memulai.
+                            </p>
+                        </div>
+                        
+                        <div v-if="dssResults.length > 0 || (isDssLoading && !dssResults.length)">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5">
+                                <h3 class="text-xl md:text-2xl font-semibold text-bamboo-700">Peringkat Detail VIKOR</h3>
+                                <div class="mt-3 sm:mt-0 flex items-center p-1 bg-neutral-100 rounded-lg border border-neutral-200">
+                                    <button @click="setActiveTab('summary')"
+                                            :class="activeTab === 'summary' ? 'bg-bamboo-600 text-white shadow' : 'text-neutral-600 hover:bg-neutral-200'"
+                                            class="px-4 py-1.5 text-sm font-semibold rounded-md transition-colors duration-200">
+                                        Ringkasan
+                                    </button>
+                                    <button @click="setActiveTab('details')"
+                                            :class="activeTab === 'details' ? 'bg-bamboo-600 text-white shadow' : 'text-neutral-600 hover:bg-neutral-200'"
+                                            class="px-4 py-1.5 text-sm font-semibold rounded-md transition-colors duration-200">
+                                        Lihat Detail
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card p-0 overflow-hidden">
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-white">
+                                        <thead class="bg-neutral-50">
+                                            <tr>
+                                                <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Peringkat</th>
+                                                <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Nama Produk</th>
+                                                <th v-if="activeTab === 'details'" class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Q Value</th>
+                                                <th v-if="activeTab === 'details'" class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">S Value</th>
+                                                <th v-if="activeTab === 'details'" class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">R Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-neutral-100" :class="{'table-loading-shimmer': isDssLoading && dssResults.length === 0}">
+                                            <template v-if="isDssLoading && dssResults.length === 0">
+                                                <tr v-for="n in 5" :key="'load-' + n">
+                                                    <td class="px-5 py-4 whitespace-nowrap"><div class="w-8"></div></td>
+                                                    <td class="px-5 py-4 whitespace-nowrap"><div class="w-full"></div></td>
+                                                    <td v-if="activeTab === 'details'" class="px-5 py-4 whitespace-nowrap"><div class="w-20"></div></td>
+                                                    <td v-if="activeTab === 'details'" class="px-5 py-4 whitespace-nowrap"><div class="w-20"></div></td>
+                                                    <td v-if="activeTab === 'details'" class="px-5 py-4 whitespace-nowrap"><div class="w-20"></div></td>
+                                                </tr>
+                                            </template>
+                                            <template v-else>
+                                                <tr v-for="(result, index) in dssResults" :key="result.product_id"
+                                                    :class="{'bg-bamboo-500/10 font-semibold': index === 0 && topRecommendation && result.product_id === topRecommendation.product_id, 'hover:bg-neutral-50/70': !(index === 0 && topRecommendation && result.product_id === topRecommendation.product_id)}"
+                                                    class="transition-colors duration-150">
+                                                    <td class="px-5 py-4 whitespace-nowrap text-sm">
+                                                        <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold"
+                                                              :class="index === 0 ? 'bg-bamboo-500 text-white shadow-md' : (index < 3 ? 'bg-bamboo-100 text-bamboo-700' : 'bg-neutral-100 text-neutral-600')">
+                                                            {{ index + 1 }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-neutral-700 font-medium">{{ result.name }}</td>
+                                                    <td v-if="activeTab === 'details'" class="px-5 py-4 whitespace-nowrap text-sm tabular-nums" :class="index === 0 ? 'text-bamboo-600 font-bold' : 'text-neutral-700'">{{ result.Q }}</td>
+                                                    <td v-if="activeTab === 'details'" class="px-5 py-4 whitespace-nowrap text-sm text-neutral-600 tabular-nums">{{ result.S }}</td>
+                                                    <td v-if="activeTab === 'details'" class="px-5 py-4 whitespace-nowrap text-sm text-neutral-600 tabular-nums">{{ result.R }}</td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p v-if="!isDssLoading && dssResults.length === 0 && !dssError" class="text-center text-neutral-500 p-8">
+                                    Tidak ada hasil peringkat untuk ditampilkan.
+                                </p>
+                            </div>
+                        </div>
+                    </div> 
+
+                    <div class="lg:col-span-1 space-y-8">
+                        <div class="card">
+                            <h3 class="text-xl font-semibold text-bamboo-700 mb-4">Kriteria Evaluasi</h3>
+                            <div v-if="isDssLoading && dssCriteria.length === 0" class="grid grid-cols-1 sm:grid-cols-2 gap-4 criteria-loading-shimmer">
+                                    <div v-for="n in 3" :key="`crit-load-${n}`"></div>
+                            </div>
+                            <div v-else class="grid grid-cols-1 gap-3">
+                                <div v-for="criterion in dssCriteria" :key="criterion.id" class="criterion-card">
                                     <div>
                                         <div class="flex items-center justify-between mb-2">
                                             <span class="text-xs font-bold uppercase tracking-wider" :class="criterion.colorClass || 'text-bamboo-600'">{{ criterion.id }}</span>
-                                            <span :class="criterion.type === 'cost' ? 'bg-red-100 text-red-700' : 'bg-bamboo-100 text-bamboo-700'"
-                                                  class="px-3 py-0.5 rounded-full text-xs font-semibold">
+                                            <span :class="criterion.type === 'cost' ? 'bg-red-100 text-red-700' : 'bg-bamboo-100 text-bamboo-700'" class="px-3 py-0.5 rounded-full text-xs font-semibold">
                                                 <i :class="criterion.type === 'cost' ? 'fas fa-arrow-down' : 'fas fa-arrow-up'" class="mr-1"></i>
                                                 {{ criterion.type === 'cost' ? 'Biaya' : 'Manfaat' }}
                                             </span>
@@ -185,113 +257,47 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div>
-                            <h4 class="text-lg font-semibold text-neutral-700 mb-3">Tindakan:</h4>
-                            <div class="flex flex-col sm:flex-row items-center gap-4">
-                                <button @click="startDSSCalculation" :disabled="isDssLoading" class="btn-gradient w-full sm:w-auto flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed">
-                                    <i class="fas fa-calculator mr-2.5"></i>
-                                    <span v-if="!isDssLoading">Jalankan Analisis Baru</span>
-                                    <span v-else>Menghitung... <i class="fas fa-spinner fa-spin ml-2"></i></span>
-                                </button>
-                                <button @click="fetchExistingRankings" :disabled="isDssLoading" class="btn-outline w-full sm:w-auto flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed">
-                                    <i class="fas fa-history mr-2.5"></i>
-                                    <span v-if="!isDssLoading">Muat Peringkat Tersimpan</span>
-                                    <span v-else>Memuat... <i class="fas fa-spinner fa-spin ml-2"></i></span>
-                                </button>
-                            </div>
-                            <p class="text-neutral-500 text-xs text-center sm:text-left mt-3">Hitung ulang atau muat peringkat produk berdasarkan data terbaru.</p>
-                        </div>
-                    </div>
-
-                    <div class="card">
-                        <h3 class="text-xl font-semibold text-bamboo-700 mb-5 flex items-center">
-                           <i class="fas fa-user-check mr-3 text-bamboo-500 text-2xl"></i>Ringkasan Akun
-                        </h3>
-                        <div class="space-y-4">
-                            <div class="flex items-center">
-                               <div class="w-10 h-10 rounded-full bg-gradient-to-br from-bamboo-400 to-bamboo-600 flex items-center justify-center text-white font-semibold text-md shadow-md mr-3">
-                                    {{ userInitials }}
+                        
+                        <div class="card">
+                            <h3 class="text-xl font-semibold text-bamboo-700 mb-5 flex items-center">
+                               <i class="fas fa-user-check mr-3 text-bamboo-500 text-2xl"></i>Ringkasan Akun
+                            </h3>
+                             <div class="space-y-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-bamboo-400 to-bamboo-600 flex items-center justify-center text-white font-semibold text-md shadow-md mr-3">
+                                        {{ userInitials }}
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-neutral-700 leading-tight">{{ user.full_name || user.username }}</p>
+                                        <p class="text-sm text-neutral-500 leading-tight">{{ user.email }}</p>
+                                    </div>
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-neutral-700 leading-tight">{{ user.full_name || user.username }}</p>
-                                    <p class="text-sm text-neutral-500 leading-tight">{{ user.email }}</p>
+                                    <p class="text-xs text-neutral-500 uppercase font-medium tracking-wider">Peran</p>
+                                    <p class="font-medium text-neutral-700 capitalize">{{ user.role }}</p>
                                 </div>
+                                <div>
+                                    <p class="text-xs text-neutral-500 uppercase font-medium tracking-wider mb-1">Status</p>
+                                    <span :class="user.is_active ? 'bg-bamboo-100 text-bamboo-800' : 'bg-red-100 text-red-800'" class="px-2.5 py-1 rounded-full text-xs font-semibold inline-flex items-center">
+                                        <i :class="user.is_active ? 'fas fa-shield-alt mr-1.5' : 'fas fa-exclamation-triangle mr-1.5'"></i>
+                                        {{ user.is_active ? 'Aktif & Aman' : 'Tidak Aktif' }}
+                                    </span>
+                                </div>
+                                 <div>
+                                    <p class="text-xs text-neutral-500 uppercase font-medium tracking-wider">Sesi Terakhir</p>
+                                    <p class="font-medium text-neutral-700">{{ formattedDate }}</p>
+                                </div>
+                                <button @click="logout" class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors duration-200">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Logout</span>
+                                </button>
                             </div>
-                            <div>
-                                <p class="text-xs text-neutral-500 uppercase font-medium tracking-wider">Peran</p>
-                                <p class="font-medium text-neutral-700 capitalize">{{ user.role }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-neutral-500 uppercase font-medium tracking-wider mb-1">Status</p>
-                                <span :class="user.is_active ? 'bg-bamboo-100 text-bamboo-800' : 'bg-red-100 text-red-800'" class="px-2.5 py-1 rounded-full text-xs font-semibold inline-flex items-center">
-                                    <i :class="user.is_active ? 'fas fa-shield-alt mr-1.5' : 'fas fa-exclamation-triangle mr-1.5'"></i>
-                                    {{ user.is_active ? 'Aktif & Aman' : 'Tidak Aktif' }}
-                                </span>
-                            </div>
-                             <div>
-                                <p class="text-xs text-neutral-500 uppercase font-medium tracking-wider">Sesi Terakhir</p>
-                                <p class="font-medium text-neutral-700">{{ formattedDate }}</p>
-                            </div>
-                              <button @click="logout" class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors duration-200">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span>Logout</span>
-                              </button>
                         </div>
-                    </div>
-                </div>
+                    </div> 
+                </div> 
 
                 <div v-if="dssError" class="my-6 p-4 bg-red-100 text-red-700 border border-red-300 rounded-lg card">
                     <i class="fas fa-times-circle mr-2"></i> {{ dssError }}
-                </div>
-
-                <div v-if="dssResults.length > 0 || (isDssLoading && dssResults.length === 0)" class="mt-8 md:mt-10">
-                    <h3 class="text-xl md:text-2xl font-semibold text-bamboo-700 mb-5">Peringkat Detail VIKOR:</h3>
-                    <div class="card p-0 overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full bg-white">
-                                <thead class="bg-neutral-50">
-                                    <tr>
-                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Peringkat</th>
-                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Nama Produk</th>
-                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">Q Value</th>
-                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">S Value</th>
-                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">R Value</th>
-                                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-neutral-500 uppercase tracking-wider">ID Produk</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-neutral-100" :class="{'table-loading-shimmer': isDssLoading && dssResults.length === 0}">
-                                    <template v-if="isDssLoading && dssResults.length === 0">
-                                        <tr v-for="n in 4" :key="'load-' + n">
-                                            <td class="px-5 py-4 whitespace-nowrap"><div class="w-8"></div></td> <td class="px-5 py-4 whitespace-nowrap"><div class="w-40"></div></td>
-                                            <td class="px-5 py-4 whitespace-nowrap"><div class="w-20"></div></td> <td class="px-5 py-4 whitespace-nowrap"><div class="w-20"></div></td>
-                                            <td class="px-5 py-4 whitespace-nowrap"><div class="w-20"></div></td> <td class="px-5 py-4 whitespace-nowrap"><div class="w-28"></div></td>
-                                        </tr>
-                                    </template>
-                                    <template v-else>
-                                        <tr v-for="(result, index) in dssResults" :key="result.product_id"
-                                            :class="{'bg-bamboo-500/10 font-semibold': index === 0 && topRecommendation && result.product_id === topRecommendation.product_id, 'hover:bg-neutral-50/70': !(index === 0 && topRecommendation && result.product_id === topRecommendation.product_id)}"
-                                            class="transition-colors duration-150">
-                                            <td class="px-5 py-4 whitespace-nowrap text-sm">
-                                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold"
-                                                      :class="index === 0 ? 'bg-bamboo-500 text-white shadow-md' : (index < 3 ? 'bg-bamboo-100 text-bamboo-700' : 'bg-neutral-100 text-neutral-600')">
-                                                    {{ index + 1 }}
-                                                </span>
-                                            </td>
-                                            <td class="px-5 py-4 whitespace-nowrap text-sm text-neutral-700 font-medium">{{ result.name }}</td>
-                                            <td class="px-5 py-4 whitespace-nowrap text-sm tabular-nums" :class="index === 0 ? 'text-bamboo-600 font-bold' : 'text-neutral-700'">{{ result.Q }}</td>
-                                            <td class="px-5 py-4 whitespace-nowrap text-sm text-neutral-600 tabular-nums">{{ result.S }}</td>
-                                            <td class="px-5 py-4 whitespace-nowrap text-sm text-neutral-600 tabular-nums">{{ result.R }}</td>
-                                            <td class="px-5 py-4 whitespace-nowrap text-sm text-neutral-500">{{ result.product_id }}</td>
-                                        </tr>
-                                    </template>
-                                </tbody>
-                            </table>
-                        </div>
-                         <p v-if="!isDssLoading && dssResults.length === 0 && !dssError" class="text-center text-neutral-500 p-8">
-                            Tidak ada hasil peringkat untuk ditampilkan. Silakan jalankan analisis atau muat data yang ada.
-                        </p>
-                    </div>
                 </div>
 
                 <footer class="mt-16 pt-10 border-t border-neutral-200/80 text-center text-sm text-neutral-500">

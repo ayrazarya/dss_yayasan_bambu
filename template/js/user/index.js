@@ -12,7 +12,10 @@ createApp({
                 'Content-Type': 'application/json',
             }
         });
-
+          const activeTab = ref('summary'); // 'summary' atau 'details'
+            const setActiveTab = (tabName) => {
+                activeTab.value = tabName;
+            };
 
         // Interceptors untuk request
         axiosInstance.interceptors.request.use(
@@ -77,7 +80,7 @@ createApp({
         const dssCriteria = ref([
             { id: 'C1', name: 'Biaya pengembangan awal (Rp)', type: 'cost', icon: 'fas fa-drafting-compass', colorClass: 'text-red-500' },
             { id: 'C2', name: 'Biaya produksi per unit (Rp)', type: 'cost', icon: 'fas fa-coins', colorClass: 'text-red-500' },
-            { id: 'C4', name: 'Minat pasar (skor 1-5)', type: 'benefit', icon: 'fas fa-users', colorClass: 'text-green-500' }
+            { id: 'C3', name: 'Minat pasar (skor 1-5)', type: 'benefit', icon: 'fas fa-users', colorClass: 'text-green-500' }
         ]);
         const dssResults = ref([]);
         const isDssLoading = ref(false);
@@ -157,79 +160,68 @@ createApp({
         };
 
         const renderOrUpdateChart = () => {
-            if (chartInstance.value) {
-                chartInstance.value.destroy();
-                chartInstance.value = null;
-            }
-            if (!dssResults.value || dssResults.value.length === 0) return;
+                    if (chartInstance.value) {
+                        chartInstance.value.destroy();
+                        chartInstance.value = null;
+                    }
+                    if (!dssResults.value || dssResults.value.length === 0) return;
 
-            const ctx = document.getElementById('vikorRankChart');
-            if (!ctx) {
-                console.warn('Elemen canvas "vikorRankChart" tidak ditemukan.');
-                return;
-            }
+                    const ctx = document.getElementById('vikorRankChart');
+                    if (!ctx) {
+                        console.warn('Elemen canvas "vikorRankChart" tidak ditemukan.');
+                        return;
+                    }
 
-            const sortedResults = [...dssResults.value]
-                .filter(item => item.Q && !isNaN(parseFloat(item.Q)))
-                .sort((a, b) => parseFloat(a.Q) - parseFloat(b.Q));
+                    const sortedResults = [...dssResults.value]
+                        .filter(item => item.Q && !isNaN(parseFloat(item.Q)))
+                        .sort((a, b) => parseFloat(a.Q) - parseFloat(b.Q));
 
-            if (sortedResults.length === 0) {
-                console.warn('Tidak ada data valid untuk ditampilkan di grafik setelah filter.');
-                return;
-            }
+                    if (sortedResults.length === 0) {
+                        console.warn('Tidak ada data valid untuk ditampilkan di grafik setelah filter.');
+                        return;
+                    }
 
-            const labels = sortedResults.map(item => item.name.length > 25 ? item.name.substring(0,22)+'...' : item.name);
-            const dataValues = sortedResults.map(item => parseFloat(item.Q));
+                    const labels = sortedResults.map(item => item.name.length > 25 ? item.name.substring(0,22)+'...' : item.name);
+                    const dataValues = sortedResults.map(item => parseFloat(item.Q));
 
-            chartInstance.value = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Q-Value',
-                        data: dataValues,
-                        backgroundColor: sortedResults.map((item, index) => index === 0 ? 'rgba(22, 163, 74, 0.85)' : 'rgba(74, 222, 128, 0.65)'),
-                        borderColor: sortedResults.map((item, index) => index === 0 ? 'rgba(17, 128, 59, 1)' : 'rgba(50, 180, 100, 1)'),
-                        borderWidth: 1,
-                        barThickness: 'flex',
-                        maxBarThickness: 30,
-                        borderRadius: 4,
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Q-Value (Semakin Rendah Semakin Baik)', font: { weight: '500', size: 13 } },
-                            grid: { display: true, color: 'rgba(200,200,200,0.1)' },
-                            ticks: { font: { size: 11 } }
+                    chartInstance.value = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Q-Value',
+                                data: dataValues,
+                                backgroundColor: sortedResults.map((item, index) => index === 0 ? 'rgba(22, 163, 74, 0.85)' : 'rgba(74, 222, 128, 0.65)'),
+                                borderColor: sortedResults.map((item, index) => index === 0 ? 'rgba(17, 128, 59, 1)' : 'rgba(50, 180, 100, 1)'),
+                                borderWidth: 1,
+                                maxBarThickness: 30,
+                                borderRadius: 4,
+                            }]
                         },
-                        y: {
-                            grid: { display: false },
-                            ticks: { font: { size: 11 } }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.75)',
-                            titleFont: { weight: 'bold'},
-                            bodyFont: { size: 13 },
-                            padding: 10,
-                            callbacks: {
-                                label: function(context) {
-                                    return ` Q-Value: ${context.formattedValue}`;
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: { beginAtZero: true, title: { display: true, text: 'Q-Value (Semakin Rendah Semakin Baik)', font: { weight: '500', size: 13 } } },
+                                y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+                            },
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0,0,0,0.75)',
+                                    titleFont: { weight: 'bold'},
+                                    bodyFont: { size: 13 },
+                                    padding: 10,
+                                    callbacks: {
+                                        label: function(context) { return ` Q-Value: ${context.formattedValue}`; }
+                                    }
                                 }
-                            }
+                            },
+                            animation: { duration: 800, easing: 'easeInOutQuart' }
                         }
-                    },
-                    animation: { duration: 800, easing: 'easeInOutQuart' }
-                }
-            });
-        };
+                    });
+                };
 
         const startDSSCalculation = async () => {
             console.log('Mulai kalkulasi VIKOR DSS!');
@@ -279,6 +271,9 @@ createApp({
             } catch (error) {
                 /* Error sudah ditangani oleh _fetchData */
             }
+
+
+
         };
 
         const loadUserData = () => {
@@ -323,8 +318,8 @@ createApp({
             logout,
             startDSSCalculation,
             fetchExistingRankings,
-            // Anda bisa juga mengekspos apiBaseUrl ke template jika perlu, tapi biasanya tidak
-            // apiBaseUrl
+            activeTab,
+            setActiveTab
         };
     },
 
