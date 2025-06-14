@@ -15,6 +15,5 @@ class Product(Base):
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
 
-    marketed_products = relationship('MarketedProduct', back_populates='product')
     rankings = relationship('ProductRanking', back_populates='product')
     surveys: Mapped[List['MarketSurvey']] = relationship('MarketSurvey', back_populates='product')
