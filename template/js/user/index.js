@@ -77,7 +77,6 @@ createApp({
         const dssCriteria = ref([
             { id: 'C1', name: 'Biaya pengembangan awal (Rp)', type: 'cost', icon: 'fas fa-drafting-compass', colorClass: 'text-red-500' },
             { id: 'C2', name: 'Biaya produksi per unit (Rp)', type: 'cost', icon: 'fas fa-coins', colorClass: 'text-red-500' },
-            { id: 'C3', name: 'Periode balik modal (bulan)', type: 'cost', icon: 'fas fa-hourglass-half', colorClass: 'text-orange-500' },
             { id: 'C4', name: 'Minat pasar (skor 1-5)', type: 'benefit', icon: 'fas fa-users', colorClass: 'text-green-500' }
         ]);
         const dssResults = ref([]);

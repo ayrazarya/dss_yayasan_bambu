@@ -162,7 +162,7 @@
                         <div class="mb-8">
                             <h4 class="text-lg font-semibold text-neutral-700 mb-4">Kriteria Evaluasi Digunakan:</h4>
                             <div v-if="isDssLoading && dssCriteria.length === 0" class="grid grid-cols-1 sm:grid-cols-2 gap-4 criteria-loading-shimmer">
-                                <div v-for="n in 4" :key="`crit-load-${n}`"></div>
+                                <div v-for="n in 3" :key="`crit-load-${n}`"></div>
                             </div>
                             <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div v-for="criterion in dssCriteria" :key="criterion.id"
