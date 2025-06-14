@@ -300,13 +300,65 @@
                     <i class="fas fa-times-circle mr-2"></i> {{ dssError }}
                 </div>
 
-                <footer class="mt-16 pt-10 border-t border-neutral-200/80 text-center text-sm text-neutral-500">
-                    <p>&copy; {{ new Date().getFullYear() }} DSS Analitik Solutions. Hak Cipta Dilindungi.</p>
-                    <p class="mt-1 opacity-80">Pengambilan Keputusan Cerdas, Disederhanakan.</p>
-                </footer>
+
             </div>
         </main>
     </div>
+    <footer class="bg-white border-t border-neutral-200">
+    <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+            <div class="space-y-4">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-seedling text-2xl" style="color: #15803d;"></i>
+                    <span class="text-xl font-bold text-neutral-800">DSS Analitik</span>
+                </div>
+                <p class="text-neutral-500 text-sm">
+                    Platform untuk pengambilan keputusan yang cerdas dan terukur, membantu Anda menganalisis alternatif dengan mudah.
+                </p>
+            </div>
+
+            <div>
+                <h3 class="text-base font-semibold text-neutral-800">Jelajahi</h3>
+                <ul class="mt-4 space-y-3">
+                    <li><a href="#" class="text-sm text-neutral-600 hover:text-green-600 transition-colors">Tentang Kami</a></li>
+                    <li><a href="#" class="text-sm text-neutral-600 hover:text-green-600 transition-colors">Layanan</a></li>
+                    <li><a href="#" class="text-sm text-neutral-600 hover:text-green-600 transition-colors">Studi Kasus</a></li>
+                    <li><a href="#" class="text-sm text-neutral-600 hover:text-green-600 transition-colors">Kontak</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-base font-semibold text-neutral-800">Legal</h3>
+                <ul class="mt-4 space-y-3">
+                    <li><a href="#" class="text-sm text-neutral-600 hover:text-green-600 transition-colors">Kebijakan Privasi</a></li>
+                    <li><a href="#" class="text-sm text-neutral-600 hover:text-green-600 transition-colors">Syarat & Ketentuan</a></li>
+                    <li><a href="#" class="text-sm text-neutral-600 hover:text-green-600 transition-colors">Penggunaan Cookies</a></li>
+                </ul>
+            </div>
+
+             <div>
+                <h3 class="text-base font-semibold text-neutral-800">Ikuti Kami</h3>
+                <p class="mt-4 text-sm text-neutral-500">Dapatkan info terbaru dari kami di media sosial.</p>
+                <div class="mt-4 flex space-x-5">
+                    <a href="#" class="text-neutral-500 hover:text-green-600 transition-colors">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-neutral-500 hover:text-green-600 transition-colors">
+                        <i class="fab fa-facebook-f text-xl"></i>
+                    </a>
+                    <a href="#" class="text-neutral-500 hover:text-green-600 transition-colors">
+                        <i class="fab fa-linkedin-in text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-12 pt-8 border-t border-neutral-200 text-center">
+            <p class="text-sm text-neutral-500">&copy; {{ new Date().getFullYear() }} DSS Analitik Solutions. Hak Cipta Dilindungi.</p>
+        </div>
+    </div>
+</footer>
 
    <script type="module" src="../js/user/index.js"></script>
 </body>
