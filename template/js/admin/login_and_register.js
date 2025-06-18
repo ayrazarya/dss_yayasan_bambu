@@ -1,5 +1,6 @@
 // Import konfigurasi API
 import { API_BASE_URL } from '../utils/api_base_url.js';
+import { FRONTEND_AES_KEY } from '../utils/encrypt.js';
 
 const { createApp } = Vue;
 
@@ -41,6 +42,19 @@ createApp({
         /**
          * Handle proses login admin
          */
+
+        getDecryptedToken() {
+    const encrypted = localStorage.getItem('adminToken');
+    if (!encrypted) return null;
+
+    try {
+        return CryptoJS.AES.decrypt(encrypted, FRONTEND_AES_KEY).toString(CryptoJS.enc.Utf8);
+    } catch (err) {
+        console.error("Gagal dekripsi token:", err);
+        return null;
+    }
+},
+
         async handleLogin() {
             // Set loading state dan clear messages
             this.loading = true;
@@ -65,7 +79,10 @@ createApp({
                     this.successMessage = `Selamat datang, ${response.data.admin.username}!`;
 
                     // Simpan token dan data admin ke localStorage
-                    localStorage.setItem('adminToken', response.data.access_token);
+                    // Enkripsi token sebelum disimpan
+                    const encryptedToken = CryptoJS.AES.encrypt(response.data.access_token, FRONTEND_AES_KEY).toString();
+                    localStorage.setItem('adminToken', encryptedToken);
+
                     localStorage.setItem('adminData', JSON.stringify(response.data.admin));
 
                     // Redirect ke dashboard setelah 2 detik

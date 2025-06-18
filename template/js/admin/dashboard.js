@@ -1,4 +1,6 @@
 import { API_BASE_URL } from '../utils/api_base_url.js';
+import { FRONTEND_AES_KEY } from '../utils/encrypt.js';
+
 
 const { createApp } = Vue;
 
@@ -98,20 +100,36 @@ createApp({
             }
         },
 
+        decryptToken(encryptedToken) {
+    try {
+        const decrypted = CryptoJS.AES.decrypt(encryptedToken, FRONTEND_AES_KEY);
+        return decrypted.toString(CryptoJS.enc.Utf8);
+    } catch (err) {
+        console.error("Gagal mendekripsi token:", err);
+        return null;
+    }
+},
+
+
            authHeader() {
-            const token = localStorage.getItem("adminToken");
+           const encrypted = localStorage.getItem("adminToken");
+            const token = this.decryptToken(encrypted);
+
             return {
                 "Authorization": `Bearer ${token}`,
                 "Content-Type": "application/json"
             };
         },
 
-        logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('adminData');
-                window.location.href = '/template/admin/admin_login_register.html';
-            }
-        },
+        // Saat logout
+logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('adminData');
+        localStorage.removeItem('adminToken');
+        window.location.href = '/template/admin/admin_login_register.html';
+    }
+},
+
 
 
     // Ambil daftar produk
