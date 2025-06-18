@@ -1,13 +1,10 @@
-import jwt
 from datetime import datetime, timedelta
-import os
+from jose import jwt
+from utils.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 
-JWT_SECRET = os.getenv("JWT_SECRET", "defaultsecret")  # kasih default supaya gak error
-JWT_ALGORITHM = "HS256"
-
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(hours=1)):
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)):
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt

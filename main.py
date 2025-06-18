@@ -11,8 +11,12 @@ from starlette.staticfiles import StaticFiles
 from router import vikor_router, admin_router, product_router, user_router
 
 from utils.database import Base, engine, get_db
+from dotenv import load_dotenv
 
 app = FastAPI()
+
+
+load_dotenv()
 
 app.add_middleware(
     CORSMiddleware,

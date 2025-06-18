@@ -1,18 +1,16 @@
-#admin routerfrom fastapi import APIRouter, Depends, HTTPException
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from datetime import datetime
+from typing import List
 
 from controllers.admin_controller import get_admin_by_username, hash_password, login_admin
 from schemas.admin_schema import AdminCreate, AdminLogin, AdminResponse, AdminLoginResponse
 from models.admin import Admin
 from utils.database import get_db
-from datetime import datetime
-from typing import List
-
+from dependencies.auth import get_current_admin  # JWT middleware
 
 router = APIRouter()
 
-# Buat akun admin baru
 @router.post("/register", response_model=AdminResponse)
 def create_admin(admin_data: AdminCreate, db: Session = Depends(get_db)):
     existing_admin = get_admin_by_username(db, admin_data.username)
@@ -35,19 +33,14 @@ def create_admin(admin_data: AdminCreate, db: Session = Depends(get_db)):
     return new_admin
 
 
-# Login admin
 @router.post("/login", response_model=AdminLoginResponse)
 def login(admin_data: AdminLogin, db: Session = Depends(get_db)):
-    login_result = login_admin(db, admin_data)
-    return {
-        "access_token": login_result["access_token"],
-        "token_type": "bearer",
-        "admin": login_result["admin"]
-    }
+    return login_admin(db, admin_data)
 
 
-
-# Dapatkan semua admin (opsional)
 @router.get("/", response_model=List[AdminResponse])
-def get_all_admins(db: Session = Depends(get_db)):
+def get_all_admins(
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin)  # proteksi pakai token
+):
     return db.query(Admin).all()

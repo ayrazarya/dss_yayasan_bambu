@@ -97,167 +97,181 @@ createApp({
                     return baseClass + 'bg-gray-100 text-gray-800';
             }
         },
+
+           authHeader() {
+            const token = localStorage.getItem("adminToken");
+            return {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            };
+        },
+
         logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('adminData');
                 window.location.href = '/template/admin/admin_login_register.html';
             }
         },
-        async fetchProducts() {
-            try {
-                const response = await axios.get(`${API_BASE_URL}products/`);
-                this.products = response.data;
 
-                // Initialize charts after data is loaded
-                this.$nextTick(() => {
-                    setTimeout(() => {
-                        this.initializeCharts();
-                    }, 100);
-                });
-            } catch (error) {
-                console.error('Error fetching products:', error);
-                const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch products';
-                alert(errorMessage);
-            }
-        },
 
-        async addProduct() {
-            try {
-                const payload = {
-                    name: this.newProduct.name,
-                    development_cost: parseFloat(this.newProduct.development_cost),
-                    production_cost_per_unit: parseFloat(this.newProduct.production_cost_per_unit),
-                    status: this.newProduct.status || null,
-                    description: null,
-                    form_response_id: this.newProduct.survey_form_id || null
-                };
-                const response = await axios.post(`${API_BASE_URL}products/`, payload, {
-                    headers: { 'Content-Type': 'application/json' }
-                });
+    // Ambil daftar produk
+    async fetchProducts() {
+        try {
+            const response = await axios.get(`${API_BASE_URL}products/`, {
+                headers: this.authHeader()
+            });
 
-                const createdProduct = response.data;
-                this.products.push(createdProduct);
+            this.products = response.data;
 
-                // Reset form
-                this.newProduct.name = '';
-                this.newProduct.development_cost = null;
-                this.newProduct.production_cost_per_unit = null;
-                this.newProduct.status = '';
+            // Initialize charts
+            this.$nextTick(() => {
+                setTimeout(() => {
+                    this.initializeCharts();
+                }, 100);
+            });
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            const errorMessage = error.response?.data?.detail || error.message || 'Failed to fetch products';
+            alert(errorMessage);
+        }
+    },
 
-                // Show success message
-                this.showNotification('Product added successfully!', 'success: ');
-
-            } catch (error) {
-                console.error('Error adding product:', error);
-                const errorMessage = error.response?.data?.message || error.message || 'Failed to add product';
-                alert(errorMessage);
-            }
-        },
-
-        // New edit methods
-        startEdit(product) {
-            this.editingProduct = product.product_id;
-            this.editProduct = {
-                product_id: product.product_id,
-                name: product.name,
-                development_cost: product.development_cost,
-                production_cost_per_unit: product.production_cost_per_unit,
-                status: product.status || ''
+    // Tambah produk baru
+    async addProduct() {
+        try {
+            const payload = {
+                name: this.newProduct.name,
+                development_cost: parseFloat(this.newProduct.development_cost),
+                production_cost_per_unit: parseFloat(this.newProduct.production_cost_per_unit),
+                status: this.newProduct.status || null,
+                description: null,
+                form_response_id: this.newProduct.survey_form_id || null
             };
-        },
 
-        cancelEdit() {
-            this.editingProduct = null;
-            this.editProduct = {
-                product_id: null,
+            const response = await axios.post(`${API_BASE_URL}products/`, payload, {
+                headers: this.authHeader()
+            });
+
+            const createdProduct = response.data;
+            this.products.push(createdProduct);
+
+            // Reset form
+            this.newProduct = {
                 name: '',
                 development_cost: null,
                 production_cost_per_unit: null,
-                status: ''
+                status: '',
+                survey_form_id: ''
             };
-        },
 
-        async saveEdit() {
-            try {
-                const payload = {
-                    name: this.editProduct.name,
-                    development_cost: parseFloat(this.editProduct.development_cost),
-                    production_cost_per_unit: parseFloat(this.editProduct.production_cost_per_unit),
-                    status: this.editProduct.status || null,
-                    description: null
-                };
+            this.showNotification('Product added successfully!', 'success');
 
-                const response = await axios.put(`${API_BASE_URL}products/${this.editProduct.product_id}`, payload, {
-                    headers: { 'Content-Type': 'application/json' }
-                });
+        } catch (error) {
+            console.error('Error adding product:', error);
+            const errorMessage = error.response?.data?.detail || error.message || 'Failed to add product';
+            alert(errorMessage);
+        }
+    },
 
-                const updatedProduct = response.data;
+    // Inisialisasi edit
+    startEdit(product) {
+        this.editingProduct = product.product_id;
+        this.editProduct = { ...product };
+    },
 
-                // Update the product in the local array
-                const index = this.products.findIndex(p => p.product_id === this.editProduct.product_id);
-                if (index !== -1) {
-                    this.products[index] = updatedProduct;
+    // Batal edit
+    cancelEdit() {
+        this.editingProduct = null;
+        this.editProduct = {
+            product_id: null,
+            name: '',
+            development_cost: null,
+            production_cost_per_unit: null,
+            status: ''
+        };
+    },
+
+    // Simpan hasil edit
+    async saveEdit() {
+        try {
+            const payload = {
+                name: this.editProduct.name,
+                development_cost: parseFloat(this.editProduct.development_cost),
+                production_cost_per_unit: parseFloat(this.editProduct.production_cost_per_unit),
+                status: this.editProduct.status || null,
+                description: null
+            };
+
+            const response = await axios.put(`${API_BASE_URL}products/${this.editProduct.product_id}`, payload, {
+                headers: this.authHeader()
+            });
+
+            const updatedProduct = response.data;
+            const index = this.products.findIndex(p => p.product_id === updatedProduct.product_id);
+            if (index !== -1) this.products[index] = updatedProduct;
+
+            this.cancelEdit();
+            this.showNotification('Product updated successfully!', 'success');
+
+        } catch (error) {
+            console.error('Error updating product:', error);
+            const errorMessage = error.response?.data?.detail || error.message || 'Failed to update product';
+            alert(errorMessage);
+        }
+    },
+
+    // Hapus produk
+    async deleteProduct(productId) {
+        if (!confirm('Are you sure you want to delete this product?')) return;
+
+        try {
+            await axios.delete(`${API_BASE_URL}products/${productId}`, {
+                headers: this.authHeader()
+            });
+
+            this.products = this.products.filter(p => p.product_id !== productId);
+            this.showNotification('Product deleted successfully!', 'success');
+
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            const errorMessage = error.response?.data?.detail || error.message || 'Failed to delete product';
+            alert(errorMessage);
+        }
+    },
+
+    // Cek validitas survey form ID
+    async checkSurveyId() {
+        try {
+            const response = await axios.get(
+                `${API_BASE_URL}products/api/survey/check-id/${this.newProduct.survey_form_id}`,
+                {
+                    headers: this.authHeader()
                 }
+            );
 
-                // Reset edit state
-                this.cancelEdit();
-
-                // Show success message
-                this.showNotification('Product updated successfully!', 'success');
-
-            } catch (error) {
-                console.error('Error updating product:', error);
-                const errorMessage = error.response?.data?.message || error.message || 'Failed to update product';
-                alert(errorMessage);
-            }
-        },
-
-        async deleteProduct(productId) {
-            if (!confirm('Are you sure you want to delete this product?')) return;
-
-            try {
-                await axios.delete(`${API_BASE_URL}products/${productId}`);
-
-                this.products = this.products.filter(p => p.product_id !== productId);
-
-                // Show success message
-                this.showNotification('Product deleted successfully!', 'success');
-
-            } catch (error) {
-                console.error('Error deleting product:', error);
-                const errorMessage = error.response?.data?.message || error.message || 'Failed to delete product';
-                alert(errorMessage);
-            }
-        },
-
-        async checkSurveyId() {
-              try {
-                const response = await axios.get(
-                  `${API_BASE_URL}products/api/survey/check-id/${this.newProduct.survey_form_id}`
-                );
-
-                if (response.data.valid) {
-                  this.modal = {
+            if (response.data.valid) {
+                this.modal = {
                     show: true,
                     title: "ID Valid",
                     message: "Survey form ID yang kamu masukkan valid dan bisa digunakan."
-                  };
-                } else {
-                  this.modal = {
+                };
+            } else {
+                this.modal = {
                     show: true,
                     title: "ID Tidak Valid",
-                    message: "ID tidak valid. Silakan periksa kembali ID Google Sheet yang kamu masukkan dan pastikan sudah dibagikan ke service account."
-                  };
-                }
-              } catch (error) {
-                console.error("Terjadi error saat mengecek ID:", error);
-                this.modal = {
-                  show: true,
-                  title: "Gagal Mengecek ID",
-                  message: "Terjadi kesalahan saat mengecek ID Google Sheet yang kamu masukkan dan pastikan sudah dibagikan ke service account."
+                    message: "ID tidak valid. Pastikan sudah dibagikan ke service account."
                 };
-              }
-            },
+            }
+        } catch (error) {
+            console.error("Terjadi error saat mengecek ID:", error);
+            this.modal = {
+                show: true,
+                title: "Gagal Mengecek ID",
+                message: "Terjadi kesalahan saat mengecek ID. Pastikan sudah dibagikan ke service account."
+            };
+        }
+    },
+
 
         showNotification(message, type = 'info') {
             // Simple notification - you can enhance this with a proper notification system
